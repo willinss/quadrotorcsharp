@@ -1,0 +1,381 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     03/Aug/2015  09:48:16 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\src\Sources\C\Component_C\queue.c                 #
+#    Command line =  "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\C\Component_C\queue.c" -D IAR -D     #
+#                    TWR_K60N512 -lCN "C:\Users\Thinkpad\Desktop\quadrotor150 #
+#                    720飞行器跟随小车(改I2C)\bin\Flash\List\" -lB            #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\List\" -o                              #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\" --no_cse --no_unroll             #
+#                    --no_inline --no_code_motion --no_tbaa --no_clustering   #
+#                    --no_scheduling --debug --endian=little --cpu=Cortex-M4  #
+#                    -e --fpu=None --dlib_config "E:\Program Files\IAR        #
+#                    Systems\Embedded Workbench 6.4\arm\INC\c\DLib_Config_Nor #
+#                    mal.h" -I "C:\Users\Thinkpad\Desktop\quadrotor150720飞行 #
+#                    器跟随小车(改I2C)\src\Sources\H\" -I                     #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\H\Component_H\" -I                   #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\H\Frame_H\" -Ol --use_c++_inline     #
+#    List file    =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\List\queue.lst                          #
+#    Object file  =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\Obj\queue.o                             #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车(改I2C)\src\Sources\C\Component_C\queue.c
+      1          
+      2          #include "queue.h"
+      3           
+      4          
+      5          
+      6          //初始化链队列，创建一个带头节点的空对
+
+   \                                 In section .text, align 2, keep-with-next
+      7          LQueue* Init_LQueue()
+      8          {
+   \                     Init_LQueue:
+   \   00000000   0xB510             PUSH     {R4,LR}
+      9          	LNode *p;//定义为链表指针
+     10          	LQueue *q;
+     11          
+     12          	p=(LNode*)malloc(sizeof(LNode));
+   \   00000002   0x2008             MOVS     R0,#+8
+   \   00000004   0x.... 0x....      BL       malloc
+   \   00000008   0x0004             MOVS     R4,R0
+     13          	if(p==NULL)
+   \   0000000A   0x2C00             CMP      R4,#+0
+   \   0000000C   0xD101             BNE.N    ??Init_LQueue_0
+     14          	{
+     15          		//printf("malloc error\n");
+     16          		return NULL;
+   \   0000000E   0x2000             MOVS     R0,#+0
+   \   00000010   0xE00D             B.N      ??Init_LQueue_1
+     17          	}
+     18          	q=(LQueue*)malloc(sizeof(LQueue));
+   \                     ??Init_LQueue_0:
+   \   00000012   0x2008             MOVS     R0,#+8
+   \   00000014   0x.... 0x....      BL       malloc
+     19          	if(q==NULL)
+   \   00000018   0x2800             CMP      R0,#+0
+   \   0000001A   0xD104             BNE.N    ??Init_LQueue_2
+     20          	{
+     21          		free(p);
+   \   0000001C   0x0020             MOVS     R0,R4
+   \   0000001E   0x.... 0x....      BL       free
+     22          		//printf("malloc error\n");
+     23          		return NULL;
+   \   00000022   0x2000             MOVS     R0,#+0
+   \   00000024   0xE003             B.N      ??Init_LQueue_1
+     24          	}
+     25          	p->next=NULL;
+   \                     ??Init_LQueue_2:
+   \   00000026   0x2100             MOVS     R1,#+0
+   \   00000028   0x6061             STR      R1,[R4, #+4]
+     26          	q->front=q->rear=p;
+   \   0000002A   0x6044             STR      R4,[R0, #+4]
+   \   0000002C   0x6004             STR      R4,[R0, #+0]
+     27          	return q;
+   \                     ??Init_LQueue_1:
+   \   0000002E   0xBD10             POP      {R4,PC}          ;; return
+     28          
+     29          }
+     30          
+     31          //链队列入对
+
+   \                                 In section .text, align 2, keep-with-next
+     32          static int In_LQueue(LQueue *q,ElemType x)
+     33          {
+   \                     In_LQueue:
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+   \   00000004   0x000D             MOVS     R5,R1
+     34          	LNode *p;//链表指针
+     35          
+     36          	p=(LNode*)malloc(sizeof(LNode));//开辟新空间
+   \   00000006   0x2008             MOVS     R0,#+8
+   \   00000008   0x.... 0x....      BL       malloc
+     37          	if(p==NULL)
+   \   0000000C   0x2800             CMP      R0,#+0
+   \   0000000E   0xD101             BNE.N    ??In_LQueue_0
+     38          	{
+     39          		//printf("malloc error\n");
+     40          		return 0;
+   \   00000010   0x2000             MOVS     R0,#+0
+   \   00000012   0xE006             B.N      ??In_LQueue_1
+     41          	}
+     42          	p->data=x;
+   \                     ??In_LQueue_0:
+   \   00000014   0x6005             STR      R5,[R0, #+0]
+     43          	p->next =NULL;//链尾置空
+   \   00000016   0x2100             MOVS     R1,#+0
+   \   00000018   0x6041             STR      R1,[R0, #+4]
+     44          
+     45          	q->rear->next=p;//对尾指向链尾
+   \   0000001A   0x6861             LDR      R1,[R4, #+4]
+   \   0000001C   0x6048             STR      R0,[R1, #+4]
+     46          	q->rear=p;//对尾后移
+   \   0000001E   0x6060             STR      R0,[R4, #+4]
+     47          	return 1;
+   \   00000020   0x2001             MOVS     R0,#+1
+   \                     ??In_LQueue_1:
+   \   00000022   0xBD32             POP      {R1,R4,R5,PC}    ;; return
+     48          }
+     49          
+     50          //链队列出对
+
+   \                                 In section .text, align 2, keep-with-next
+     51          static int Out_LQueue(LQueue *q,ElemType *x)
+     52          {
+   \                     Out_LQueue:
+   \   00000000   0xB510             PUSH     {R4,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+     53          	LNode *p;
+     54          
+     55          	if(q->front == q->rear)
+   \   00000004   0x6820             LDR      R0,[R4, #+0]
+   \   00000006   0x6862             LDR      R2,[R4, #+4]
+   \   00000008   0x4290             CMP      R0,R2
+   \   0000000A   0xD101             BNE.N    ??Out_LQueue_0
+     56          	{
+     57          		//printf("链队列为空!不能出对!\n");
+     58          		return 0;	
+   \   0000000C   0x2000             MOVS     R0,#+0
+   \   0000000E   0xE00F             B.N      ??Out_LQueue_1
+     59          	}
+     60          
+     61          	p=q->front->next;//找到对头第一个有值节点
+   \                     ??Out_LQueue_0:
+   \   00000010   0x6820             LDR      R0,[R4, #+0]
+   \   00000012   0x6840             LDR      R0,[R0, #+4]
+     62          	*x=p->data;//取出数值
+   \   00000014   0x6802             LDR      R2,[R0, #+0]
+   \   00000016   0x600A             STR      R2,[R1, #+0]
+     63          	q->front->next=p->next;
+   \   00000018   0x6821             LDR      R1,[R4, #+0]
+   \   0000001A   0x6842             LDR      R2,[R0, #+4]
+   \   0000001C   0x604A             STR      R2,[R1, #+4]
+     64          	free(p);
+   \   0000001E   0x.... 0x....      BL       free
+     65          	if(q->front->next == NULL)//当出对为最后一个节点时，修改头尾指针.
+   \   00000022   0x6820             LDR      R0,[R4, #+0]
+   \   00000024   0x6840             LDR      R0,[R0, #+4]
+   \   00000026   0x2800             CMP      R0,#+0
+   \   00000028   0xD101             BNE.N    ??Out_LQueue_2
+     66          		q->front = q->rear;
+   \   0000002A   0x6860             LDR      R0,[R4, #+4]
+   \   0000002C   0x6020             STR      R0,[R4, #+0]
+     67          	return 1;
+   \                     ??Out_LQueue_2:
+   \   0000002E   0x2001             MOVS     R0,#+1
+   \                     ??Out_LQueue_1:
+   \   00000030   0xBD10             POP      {R4,PC}          ;; return
+     68          }
+     69          
+     70          //求队列的长度
+
+   \                                 In section .text, align 2, keep-with-next
+     71          static int LQueueLen(LQueue *q)
+     72          {
+     73          	int length=0;
+   \                     LQueueLen:
+   \   00000000   0x2100             MOVS     R1,#+0
+     74          	LNode *p;
+     75          
+     76          	p=q->front;
+   \   00000002   0x6802             LDR      R2,[R0, #+0]
+   \   00000004   0xE001             B.N      ??LQueueLen_0
+     77          	while(p!=q->rear)
+     78          	{
+     79          		length++;
+   \                     ??LQueueLen_1:
+   \   00000006   0x1C49             ADDS     R1,R1,#+1
+     80          		p=p->next;
+   \   00000008   0x6852             LDR      R2,[R2, #+4]
+     81          	}
+   \                     ??LQueueLen_0:
+   \   0000000A   0x6843             LDR      R3,[R0, #+4]
+   \   0000000C   0x429A             CMP      R2,R3
+   \   0000000E   0xD1FA             BNE.N    ??LQueueLen_1
+     82          	return length;
+   \   00000010   0x0008             MOVS     R0,R1
+   \   00000012   0x4770             BX       LR               ;; return
+     83          } 
+     84          
+     85          //释放链队列
+
+   \                                 In section .text, align 2, keep-with-next
+     86          int Free_LQueue(LQueue *q)
+     87          {
+   \                     Free_LQueue:
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+     88          	LNode *p,*t;
+     89          
+     90          	p=q->front->next;
+   \   00000004   0x6820             LDR      R0,[R4, #+0]
+   \   00000006   0x6840             LDR      R0,[R0, #+4]
+   \   00000008   0xE003             B.N      ??Free_LQueue_0
+     91          	while(p!=NULL)
+     92          	{
+     93          		t=p->next;
+   \                     ??Free_LQueue_1:
+   \   0000000A   0x6845             LDR      R5,[R0, #+4]
+     94          		free(p);//释放链表
+   \   0000000C   0x.... 0x....      BL       free
+     95          		p=t;
+   \   00000010   0x0028             MOVS     R0,R5
+     96          	}
+   \                     ??Free_LQueue_0:
+   \   00000012   0x2800             CMP      R0,#+0
+   \   00000014   0xD1F9             BNE.N    ??Free_LQueue_1
+     97          	q->front=q->rear=NULL;//置队列为空
+   \   00000016   0x2000             MOVS     R0,#+0
+   \   00000018   0x6060             STR      R0,[R4, #+4]
+   \   0000001A   0x6020             STR      R0,[R4, #+0]
+     98          	return 1;
+   \   0000001C   0x2001             MOVS     R0,#+1
+   \   0000001E   0xBD32             POP      {R1,R4,R5,PC}    ;; return
+     99          }
+    100          
+
+   \                                 In section .text, align 2, keep-with-next
+    101          int Handler_LQueue(LQueue *q, ElemType x, ElemType *sum)
+    102          {
+   \                     Handler_LQueue:
+   \   00000000   0xB570             PUSH     {R4-R6,LR}
+   \   00000002   0xB082             SUB      SP,SP,#+8
+   \   00000004   0x0004             MOVS     R4,R0
+   \   00000006   0x000E             MOVS     R6,R1
+   \   00000008   0x0015             MOVS     R5,R2
+    103          	static int _isFull = 0;
+    104          	ElemType xOut = 0;
+   \   0000000A   0x2000             MOVS     R0,#+0
+   \   0000000C   0x9000             STR      R0,[SP, #+0]
+    105          
+    106          	*sum += x;//累加
+   \   0000000E   0x6828             LDR      R0,[R5, #+0]
+   \   00000010   0x0031             MOVS     R1,R6
+   \   00000012   0x.... 0x....      BL       __aeabi_fadd
+   \   00000016   0x6028             STR      R0,[R5, #+0]
+    107          	if(In_LQueue(q,x) == 0)
+   \   00000018   0x0031             MOVS     R1,R6
+   \   0000001A   0x0020             MOVS     R0,R4
+   \   0000001C   0x.... 0x....      BL       In_LQueue
+   \   00000020   0x2800             CMP      R0,#+0
+   \   00000022   0xD101             BNE.N    ??Handler_LQueue_0
+    108          	{
+    109          	  return 0;
+   \   00000024   0x2000             MOVS     R0,#+0
+   \   00000026   0xE019             B.N      ??Handler_LQueue_1
+    110          	}
+    111          	if(_isFull == 1 || LQueueLen(q) > MAX_LEN)
+   \                     ??Handler_LQueue_0:
+   \   00000028   0x....             LDR.N    R0,??DataTable0
+   \   0000002A   0x6800             LDR      R0,[R0, #+0]
+   \   0000002C   0x2801             CMP      R0,#+1
+   \   0000002E   0xD004             BEQ.N    ??Handler_LQueue_2
+   \   00000030   0x0020             MOVS     R0,R4
+   \   00000032   0x.... 0x....      BL       LQueueLen
+   \   00000036   0x2865             CMP      R0,#+101
+   \   00000038   0xDB0F             BLT.N    ??Handler_LQueue_3
+    112          	{
+    113          		_isFull = 1;
+   \                     ??Handler_LQueue_2:
+   \   0000003A   0x....             LDR.N    R0,??DataTable0
+   \   0000003C   0x2101             MOVS     R1,#+1
+   \   0000003E   0x6001             STR      R1,[R0, #+0]
+    114          		if(Out_LQueue(q,&xOut) == 0)
+   \   00000040   0xA900             ADD      R1,SP,#+0
+   \   00000042   0x0020             MOVS     R0,R4
+   \   00000044   0x.... 0x....      BL       Out_LQueue
+   \   00000048   0x2800             CMP      R0,#+0
+   \   0000004A   0xD101             BNE.N    ??Handler_LQueue_4
+    115          		{
+    116          		  return 0;
+   \   0000004C   0x2000             MOVS     R0,#+0
+   \   0000004E   0xE005             B.N      ??Handler_LQueue_1
+    117          		}
+    118          		*sum -= xOut;
+   \                     ??Handler_LQueue_4:
+   \   00000050   0x6828             LDR      R0,[R5, #+0]
+   \   00000052   0x9900             LDR      R1,[SP, #+0]
+   \   00000054   0x.... 0x....      BL       __aeabi_fsub
+   \   00000058   0x6028             STR      R0,[R5, #+0]
+    119          	}
+    120          	return 1;
+   \                     ??Handler_LQueue_3:
+   \   0000005A   0x2001             MOVS     R0,#+1
+   \                     ??Handler_LQueue_1:
+   \   0000005C   0xBD76             POP      {R1,R2,R4-R6,PC}  ;; return
+    121          }
+
+   \                                 In section .bss, align 4
+   \                     ??_isFull:
+   \   00000000                      DS8 4
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable0:
+   \   00000000   0x........         DC32     ??_isFull
+    122          
+    123          
+    124          
+    125          
+    126          
+    127          
+    128          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       16  Free_LQueue
+             16 -> free
+       24  Handler_LQueue
+             24 -> In_LQueue
+             24 -> LQueueLen
+             24 -> Out_LQueue
+             24 -> __aeabi_fadd
+             24 -> __aeabi_fsub
+       16  In_LQueue
+             16 -> malloc
+        8  Init_LQueue
+              8 -> free
+              8 -> malloc
+        0  LQueueLen
+        8  Out_LQueue
+              8 -> free
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable0
+      32  Free_LQueue
+      94  Handler_LQueue
+      36  In_LQueue
+      48  Init_LQueue
+      20  LQueueLen
+      50  Out_LQueue
+       4  _isFull
+
+ 
+   4 bytes in section .bss
+ 284 bytes in section .text
+ 
+ 284 bytes of CODE memory
+   4 bytes of DATA memory
+
+Errors: none
+Warnings: none

@@ -1,0 +1,3131 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     03/Aug/2015  11:16:15 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\src\Sources\C\Component_C\control.c               #
+#    Command line =  "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\C\Component_C\control.c" -D IAR -D   #
+#                    TWR_K60N512 -lCN "C:\Users\Thinkpad\Desktop\quadrotor150 #
+#                    720飞行器跟随小车(改I2C)\bin\Flash\List\" -lB            #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\List\" -o                              #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\" --no_cse --no_unroll             #
+#                    --no_inline --no_code_motion --no_tbaa --no_clustering   #
+#                    --no_scheduling --debug --endian=little --cpu=Cortex-M4  #
+#                    -e --fpu=None --dlib_config "E:\Program Files\IAR        #
+#                    Systems\Embedded Workbench 6.4\arm\INC\c\DLib_Config_Nor #
+#                    mal.h" -I "C:\Users\Thinkpad\Desktop\quadrotor150720飞行 #
+#                    器跟随小车(改I2C)\src\Sources\H\" -I                     #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\H\Component_H\" -I                   #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\H\Frame_H\" -Ol --use_c++_inline     #
+#    List file    =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\List\control.lst                        #
+#    Object file  =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\Obj\control.o                           #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车(改I2C)\src\Sources\C\Component_C\control.c
+      1          //============================================================================
+      2          //文件名称：
+      3          //功能概要：使用PID对飞行器进行姿态控制
+      4          //版权所有：中山大学NCSLab
+      5          //============================================================================
+      6          
+      7          #include "control.h"
+      8          #include "filters.h"
+      9          #include "pit.h"
+     10          #include  <math.h>
+     11          
+     12          #define THREAD_TOP     1990   //PWM   
+     13          #define THREAD_BOTTOM  1000   //PWM 1000表示的是1毫秒
+     14          #define Inc_max        30     //PWM的数值防止跳变
+     15          #define Dec_max       -30
+     16          
+     17          #define OptSamTime  30       
+     18          #define Velocity    60.0f         //速度0.6m/s
+     19          
+     20          //================================全局变量声明=================================
+
+   \                                 In section .data, align 4
+     21          float Kp1 = -6 ; //垂直控制
+   \                     Kp1:
+   \   00000000   0xC0C00000         DC32 0C0C00000H
+
+   \                                 In section .data, align 4
+     22          float Kp2 = -6 ; //滚转控制y
+   \                     Kp2:
+   \   00000000   0xC0C00000         DC32 0C0C00000H
+
+   \                                 In section .data, align 4
+     23          float Kp3 = -6 ;//俯仰控制x
+   \                     Kp3:
+   \   00000000   0xC0C00000         DC32 0C0C00000H
+
+   \                                 In section .data, align 4
+     24          float Kp4 = -100;//偏航控制
+   \                     Kp4:
+   \   00000000   0xC2C80000         DC32 0C2C80000H
+     25          
+
+   \                                 In section .data, align 4
+     26          float Kd1 = -2500 ;    //垂直控制
+   \                     Kd1:
+   \   00000000   0xC51C4000         DC32 0C51C4000H
+
+   \                                 In section .data, align 4
+     27          float Kd2 = -600  ;   //滚转控制
+   \                     Kd2:
+   \   00000000   0xC4160000         DC32 0C4160000H
+
+   \                                 In section .data, align 4
+     28          float Kd3 = -600 ;    //俯仰控制
+   \                     Kd3:
+   \   00000000   0xC4160000         DC32 0C4160000H
+
+   \                                 In section .data, align 4
+     29          float Kd4 = -10000 ;    //偏航控制
+   \                     Kd4:
+   \   00000000   0xC61C4000         DC32 0C61C4000H
+     30          
+
+   \                                 In section .data, align 4
+     31          float Ki1 = -0.02;
+   \                     Ki1:
+   \   00000000   0xBCA3D70A         DC32 0BCA3D70AH
+
+   \                                 In section .data, align 4
+     32          float Ki2 = -0.00;
+   \                     Ki2:
+   \   00000000   0x80000000         DC32 80000000H
+
+   \                                 In section .data, align 4
+     33          float Ki3 = -0.00;
+   \                     Ki3:
+   \   00000000   0x80000000         DC32 80000000H
+
+   \                                 In section .data, align 4
+     34          float Ki4 = -0.01;
+   \                     Ki4:
+   \   00000000   0xBC23D70A         DC32 0BC23D70AH
+     35          
+
+   \                                 In section .data, align 4
+     36          float Kx = -0.20;
+   \                     Kx:
+   \   00000000   0xBE4CCCCD         DC32 0BE4CCCCDH
+
+   \                                 In section .data, align 4
+     37          float Ky = -0.20;
+   \                     Ky:
+   \   00000000   0xBE4CCCCD         DC32 0BE4CCCCDH
+     38          
+     39          
+
+   \                                 In section .data, align 4
+     40          float Kx1 = -0.14;
+   \                     Kx1:
+   \   00000000   0xBE0F5C29         DC32 0BE0F5C29H
+
+   \                                 In section .data, align 4
+     41          float Ky1 = -0.14;
+   \                     Ky1:
+   \   00000000   0xBE0F5C29         DC32 0BE0F5C29H
+     42          
+
+   \                                 In section .data, align 4
+     43          float Kdx1 = -2.1;
+   \                     Kdx1:
+   \   00000000   0xC0066666         DC32 0C0066666H
+
+   \                                 In section .data, align 4
+     44          float Kdy1 = -2.1;
+   \                     Kdy1:
+   \   00000000   0xC0066666         DC32 0C0066666H
+     45          
+     46          
+
+   \                                 In section .data, align 4
+     47          float Kix = -0.0003;
+   \                     Kix:
+   \   00000000   0xB99D4952         DC32 0B99D4952H
+
+   \                                 In section .data, align 4
+     48          float Kiy = -0.0003;
+   \                     Kiy:
+   \   00000000   0xB99D4952         DC32 0B99D4952H
+     49          
+
+   \                                 In section .data, align 4
+     50          float Kdx = -4.0;
+   \                     Kdx:
+   \   00000000   0xC0800000         DC32 0C0800000H
+
+   \                                 In section .data, align 4
+     51          float Kdy = -4.0;
+   \                     Kdy:
+   \   00000000   0xC0800000         DC32 0C0800000H
+     52          
+
+   \                                 In section .data, align 4
+     53          float kvx = -5.0;
+   \                     kvx:
+   \   00000000   0xC0A00000         DC32 0C0A00000H
+
+   \                                 In section .data, align 4
+     54          float kvy = -5.0;
+   \                     kvy:
+   \   00000000   0xC0A00000         DC32 0C0A00000H
+     55          
+     56          //float kdx = -10.0;
+     57          //float kdy = -10.0;
+     58          
+     59          
+
+   \                                 In section .bss, align 4
+     60          float errX = 0;
+   \                     errX:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+     61          float errY = 0;
+   \                     errY:
+   \   00000000                      DS8 4
+     62          
+
+   \                                 In section .data, align 2
+     63          uint16 BASE_VALUE = 1000;
+   \                     BASE_VALUE:
+   \   00000000   0x03E8             DC16 1000
+
+   \                                 In section .bss, align 4
+     64          float wx[DataLength] = {0}, wy[DataLength] = {0}, wz[DataLength] = {0};//DataLength=60000
+   \                     wx:
+   \   00000000                      DS8 24000
+
+   \                                 In section .bss, align 4
+   \                     wy:
+   \   00000000                      DS8 24000
+
+   \                                 In section .bss, align 4
+   \                     wz:
+   \   00000000                      DS8 24000
+     65          //float Posx[DataLength] = {0};
+     66          //float Posy[DataLength] = {0};
+
+   \                                 In section .data, align 4
+     67          float *px = wx, *py = wy, *pz = wz;
+   \                     px:
+   \   00000000   0x........         DC32 wx
+
+   \                                 In section .data, align 4
+   \                     py:
+   \   00000000   0x........         DC32 wy
+
+   \                                 In section .data, align 4
+   \                     pz:
+   \   00000000   0x........         DC32 wz
+     68          //float *posx = Posx, *posy = Posy ;
+
+   \                                 In section .bss, align 4
+     69          float lastHeight = 0;
+   \                     lastHeight:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+     70          float preHeight = 0;
+   \                     preHeight:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+     71          int dataLencounter = 0;
+   \                     dataLencounter:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+     72          int sendcount =0;
+   \                     sendcount:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 1
+     73          bool camflag=false;
+   \                     camflag:
+   \   00000000                      DS8 1
+     74          
+
+   \                                 In section .data, align 1
+     75          bool _flag_=true;//消除微分项突变...
+   \                     _flag_:
+   \   00000000   0x01               DC8 1
+     76          
+     77          
+
+   \                                 In section .bss, align 4
+     78          static float TEST1=0,TEST2=0,TEST3=0,TEST4=0,TEST5=0;
+   \                     TEST1:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     TEST2:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     TEST3:
+   \   00000000                      DS8 4
+     79          
+     80          //float Xb=0,Yb=0,Zb=0;
+     81          
+     82          //float Alphard=0,Beta=0;
+     83          //float Phi=0,Teta=0;
+     84          
+     85          //float AngleSteering=0;
+     86          
+
+   \                                 In section .data, align 4
+     87          static int PWM_X=1370,PWM_Y=850;
+   \                     PWM_X:
+   \   00000000   0x0000055A         DC32 1370
+
+   \                                 In section .data, align 4
+   \                     PWM_Y:
+   \   00000000   0x00000352         DC32 850
+     88          
+
+   \                                 In section .bss, align 1
+     89          static uint8 steerFlag=0;
+   \                     steerFlag:
+   \   00000000                      DS8 1
+     90          //float camPointX=0,camPointY=0,camPointZ=0,camHeight=0;
+
+   \                                 In section .bss, align 4
+     91          float theta=0;
+   \                     theta:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+     92          static float err_angX=0,err_angY=0;
+   \                     err_angX:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     err_angY:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+     93          static float pre_err_angX=0,pre_err_angY=0;
+   \                     pre_err_angX:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     pre_err_angY:
+   \   00000000                      DS8 4
+     94          static int position_f = 0;
+     95          //float Xs=0,Ys=0,Zs=0;
+
+   \                                 In section .bss, align 4
+     96          float image_distance=0;
+   \                     image_distance:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+     97          float revise_X=0,revise_Y=0;
+   \                     revise_X:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     revise_Y:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+     98          float cx=0,cy=0,cz=0,sx=0,sy=0,sz=0;
+   \                     cx:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     cy:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     cz:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     sx:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     sy:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     sz:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+     99          float PointX=0,PointY=0;
+   \                     PointX:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     PointY:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+    100          static float des_PointX =0;
+   \                     des_PointX:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+    101          static float des_PointY =0;
+   \                     des_PointY:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+    102           float RE_X=0,RE_Y=0;
+   \                     RE_X:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     RE_Y:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+    103          float prePointX=0,prePointY=0;//保存偏移值用以修正图像坐标
+   \                     prePointX:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     prePointY:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+    104          static float preposx=0,preposy=0;
+   \                     preposx:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     preposy:
+   \   00000000                      DS8 4
+    105          
+    106          //================================全局变量声明=================================
+    107          
+    108          //============================================================================
+    109          //函数名称：Quadrotor_pid
+    110          //函数返回：无
+    111          //参数说明：
+    112          //功能概要：
+    113          //============================================================================
+    114          
+
+   \                                 In section .text, align 4, keep-with-next
+    115          void Quadrotor_pid(float angle_X, float angle_Y, float angle_Z, float height,float PointX,float PointY,float angle_X0,float angle_Y0, float angle_Z0)
+    116          {
+   \                     Quadrotor_pid:
+   \   00000000   0xE92D 0x4FF7      PUSH     {R0-R2,R4-R11,LR}
+   \   00000004   0xB086             SUB      SP,SP,#+24
+   \   00000006   0x4698             MOV      R8,R3
+    117              float U1 = 0, U2 = 0, U3 = 0, U4 = 0;
+   \   00000008   0x2400             MOVS     R4,#+0
+   \   0000000A   0xF05F 0x0A00      MOVS     R10,#+0
+   \   0000000E   0xF05F 0x0900      MOVS     R9,#+0
+   \   00000012   0xF05F 0x0B00      MOVS     R11,#+0
+    118              float W1 = 0, W2 = 0, W3 = 0, W4 = 0;
+   \   00000016   0x2000             MOVS     R0,#+0
+   \   00000018   0x9005             STR      R0,[SP, #+20]
+   \   0000001A   0x2000             MOVS     R0,#+0
+   \   0000001C   0x9004             STR      R0,[SP, #+16]
+   \   0000001E   0x2000             MOVS     R0,#+0
+   \   00000020   0x9003             STR      R0,[SP, #+12]
+   \   00000022   0x2000             MOVS     R0,#+0
+   \   00000024   0x9002             STR      R0,[SP, #+8]
+    119              static int32 w1 = 0, w2 = 0, w3 = 0, w4 = 0;
+    120              static int32 last_w1 = 1000, last_w2 = 1000, last_w3 = 1000, last_w4 = 1000;
+    121              float err_p = 0;    //俯仰角误差
+   \   00000026   0x2000             MOVS     R0,#+0
+   \   00000028   0x9004             STR      R0,[SP, #+16]
+    122              float err_r  = 0;   //滚转角误差
+   \   0000002A   0x2000             MOVS     R0,#+0
+   \   0000002C   0x9001             STR      R0,[SP, #+4]
+    123              float err_y   = 0;  //偏航角误差
+   \   0000002E   0x2000             MOVS     R0,#+0
+   \   00000030   0x9003             STR      R0,[SP, #+12]
+    124              float err_h     = 0;//高度偏差
+   \   00000032   0x2000             MOVS     R0,#+0
+   \   00000034   0x9000             STR      R0,[SP, #+0]
+    125          
+    126              float err_pitch = 0;  //本次俯仰角误差
+   \   00000036   0x2000             MOVS     R0,#+0
+   \   00000038   0x9002             STR      R0,[SP, #+8]
+    127              float err_roll  = 0;  //本次滚转角误差
+   \   0000003A   0x2500             MOVS     R5,#+0
+    128              float err_yaw   = 0;  //本次偏航角误差
+   \   0000003C   0x2600             MOVS     R6,#+0
+    129              float err_high  = 0;  //本次高度偏差
+   \   0000003E   0x2700             MOVS     R7,#+0
+    130          
+    131              static float des_pitch = 0.0;
+    132              static float des_roll = 0.0;
+    133              static float des_yaw = 0.0;
+    134              static float pre_err_pitch = 0;  //上一次俯仰角误差
+    135              static float pre_err_roll  = 0;  //上一次滚转角误差
+    136              static float pre_err_yaw   = 0;  //上一次偏航角误差
+    137              static float pre_err_high  = 0;  //上一次高度偏差
+    138          
+    139              static double sum_err_pitch = 0, sum_err_roll = 0, sum_err_yaw = 0, sum_err_high = 0;
+    140          
+    141              static float count = 0;
+    142          
+    143              static float des_high = 50;
+    144              static uint8 K = 0;
+    145              static uint8 high_f = 0;
+    146          
+    147          
+    148              static float W_Axis_1 = 0;
+    149              static float W_Axis_2 = 0;
+    150              static float W_Axis_3 = 0;
+    151              static float W_Axis_4 = 0;
+    152          
+    153              static float k_high = 0;
+    154              
+    155              float dotErrX = 0,dotErrY=0;
+   \   00000040   0x2000             MOVS     R0,#+0
+   \   00000042   0x9001             STR      R0,[SP, #+4]
+   \   00000044   0x2000             MOVS     R0,#+0
+   \   00000046   0x9000             STR      R0,[SP, #+0]
+    156              static float lastErrX=0,lastErrY=0;
+    157              static double sumErrX=0,sumErrY=0;
+    158          
+    159          
+    160              if(abs((int)angle_X) > 20 || abs((int)angle_Y) > 20)
+   \   00000048   0x9806             LDR      R0,[SP, #+24]
+   \   0000004A   0x.... 0x....      BL       __aeabi_f2iz
+   \   0000004E   0x.... 0x....      BL       abs
+   \   00000052   0x2815             CMP      R0,#+21
+   \   00000054   0xDA06             BGE.N    ??Quadrotor_pid_0
+   \   00000056   0x9807             LDR      R0,[SP, #+28]
+   \   00000058   0x.... 0x....      BL       __aeabi_f2iz
+   \   0000005C   0x.... 0x....      BL       abs
+   \   00000060   0x2815             CMP      R0,#+21
+   \   00000062   0xDB08             BLT.N    ??Quadrotor_pid_1
+    161              {
+    162                  Landing = true;
+   \                     ??Quadrotor_pid_0:
+   \   00000064   0xF8DF 0x0B3C      LDR.W    R0,??Quadrotor_pid_2
+   \   00000068   0x2101             MOVS     R1,#+1
+   \   0000006A   0x7001             STRB     R1,[R0, #+0]
+    163                  LED2_OFF;
+   \   0000006C   0x2201             MOVS     R2,#+1
+   \   0000006E   0x210A             MOVS     R1,#+10
+   \   00000070   0x2001             MOVS     R0,#+1
+   \   00000072   0x.... 0x....      BL       hw_gpio_set
+    164              }
+    165              if(abs((int)angle_X) > 30 || abs((int)angle_Y) > 30)
+   \                     ??Quadrotor_pid_1:
+   \   00000076   0x9806             LDR      R0,[SP, #+24]
+   \   00000078   0x.... 0x....      BL       __aeabi_f2iz
+   \   0000007C   0x.... 0x....      BL       abs
+   \   00000080   0x281F             CMP      R0,#+31
+   \   00000082   0xDA06             BGE.N    ??Quadrotor_pid_3
+   \   00000084   0x9807             LDR      R0,[SP, #+28]
+   \   00000086   0x.... 0x....      BL       __aeabi_f2iz
+   \   0000008A   0x.... 0x....      BL       abs
+   \   0000008E   0x281F             CMP      R0,#+31
+   \   00000090   0xDB08             BLT.N    ??Quadrotor_pid_4
+    166              {
+    167                  Backup_landing = true;
+   \                     ??Quadrotor_pid_3:
+   \   00000092   0xF8DF 0x0B14      LDR.W    R0,??Quadrotor_pid_2+0x4
+   \   00000096   0x2101             MOVS     R1,#+1
+   \   00000098   0x7001             STRB     R1,[R0, #+0]
+    168                  LED3_OFF;
+   \   0000009A   0x2201             MOVS     R2,#+1
+   \   0000009C   0x2110             MOVS     R1,#+16
+   \   0000009E   0x2001             MOVS     R0,#+1
+   \   000000A0   0x.... 0x....      BL       hw_gpio_set
+    169              }
+    170              /////////////////////////////////////////////////////////////////////////////////////////////////
+    171              ///////////////////////////**********目标高度设定*********///////////////////////////////////////
+    172              if(abs((int)(height - lastHeight)) > 3 )
+   \                     ??Quadrotor_pid_4:
+   \   000000A4   0x4640             MOV      R0,R8
+   \   000000A6   0xF8DF 0x1B04      LDR.W    R1,??Quadrotor_pid_2+0x8
+   \   000000AA   0x6809             LDR      R1,[R1, #+0]
+   \   000000AC   0x.... 0x....      BL       __aeabi_fsub
+   \   000000B0   0x.... 0x....      BL       __aeabi_f2iz
+   \   000000B4   0x.... 0x....      BL       abs
+   \   000000B8   0x2804             CMP      R0,#+4
+   \   000000BA   0xDB04             BLT.N    ??Quadrotor_pid_5
+    173                  height = lastHeight;
+   \   000000BC   0xF8DF 0x0AEC      LDR.W    R0,??Quadrotor_pid_2+0x8
+   \   000000C0   0xF8D0 0x8000      LDR      R8,[R0, #+0]
+   \   000000C4   0xE003             B.N      ??Quadrotor_pid_6
+    174              else
+    175                  lastHeight = height;
+   \                     ??Quadrotor_pid_5:
+   \   000000C6   0xF8DF 0x0AE4      LDR.W    R0,??Quadrotor_pid_2+0x8
+   \   000000CA   0xF8C0 0x8000      STR      R8,[R0, #+0]
+    176          
+    177              if(height > 50 && high_f == 0)
+   \                     ??Quadrotor_pid_6:
+   \   000000CE   0x4640             MOV      R0,R8
+   \   000000D0   0xF8DF 0x1ADC      LDR.W    R1,??Quadrotor_pid_2+0xC  ;; 0x42480001
+   \   000000D4   0x.... 0x....      BL       __aeabi_cfrcmple
+   \   000000D8   0xD80D             BHI.N    ??Quadrotor_pid_7
+   \   000000DA   0xF8DF 0x0AD8      LDR.W    R0,??Quadrotor_pid_2+0x10
+   \   000000DE   0x7800             LDRB     R0,[R0, #+0]
+   \   000000E0   0x2800             CMP      R0,#+0
+   \   000000E2   0xD108             BNE.N    ??Quadrotor_pid_7
+    178              {
+    179                  K = 1;
+   \   000000E4   0xF8DF 0x0AD0      LDR.W    R0,??Quadrotor_pid_2+0x14
+   \   000000E8   0x2101             MOVS     R1,#+1
+   \   000000EA   0x7001             STRB     R1,[R0, #+0]
+    180                  des_high = 80;
+   \   000000EC   0xF8DF 0x0ACC      LDR.W    R0,??Quadrotor_pid_2+0x18
+   \   000000F0   0xF8DF 0x1ACC      LDR.W    R1,??Quadrotor_pid_2+0x1C  ;; 0x42a00000
+   \   000000F4   0x6001             STR      R1,[R0, #+0]
+    181          
+    182              }
+    183              if(height > 70 && high_f == 0)
+   \                     ??Quadrotor_pid_7:
+   \   000000F6   0x4640             MOV      R0,R8
+   \   000000F8   0xF8DF 0x1AC8      LDR.W    R1,??Quadrotor_pid_2+0x20  ;; 0x428c0001
+   \   000000FC   0x.... 0x....      BL       __aeabi_cfrcmple
+   \   00000100   0xD80D             BHI.N    ??Quadrotor_pid_8
+   \   00000102   0xF8DF 0x0AB0      LDR.W    R0,??Quadrotor_pid_2+0x10
+   \   00000106   0x7800             LDRB     R0,[R0, #+0]
+   \   00000108   0x2800             CMP      R0,#+0
+   \   0000010A   0xD108             BNE.N    ??Quadrotor_pid_8
+    184              {
+    185                  des_high = 110;
+   \   0000010C   0xF8DF 0x0AAC      LDR.W    R0,??Quadrotor_pid_2+0x18
+   \   00000110   0xF8DF 0x1AB4      LDR.W    R1,??Quadrotor_pid_2+0x24  ;; 0x42dc0000
+   \   00000114   0x6001             STR      R1,[R0, #+0]
+    186                  high_f = 1;
+   \   00000116   0xF8DF 0x0A9C      LDR.W    R0,??Quadrotor_pid_2+0x10
+   \   0000011A   0x2101             MOVS     R1,#+1
+   \   0000011C   0x7001             STRB     R1,[R0, #+0]
+    187              }
+    188              
+    189              //    if(height > 20 && high_f == 0)
+    190              //    {
+    191              //      K = 1;
+    192              //      des_high += 0.05;
+    193              //      if(des_high >= 140 )
+    194              //      {
+    195              //        des_high = 140;
+    196              //        high_f = 1;
+    197              //      }
+    198              //    }
+    199              if(height >= 80) k_high = 1;
+   \                     ??Quadrotor_pid_8:
+   \   0000011E   0x4640             MOV      R0,R8
+   \   00000120   0xF8DF 0x1A9C      LDR.W    R1,??Quadrotor_pid_2+0x1C  ;; 0x42a00000
+   \   00000124   0x.... 0x....      BL       __aeabi_cfrcmple
+   \   00000128   0xD804             BHI.N    ??Quadrotor_pid_9
+   \   0000012A   0xF8DF 0x0AA0      LDR.W    R0,??Quadrotor_pid_2+0x28
+   \   0000012E   0xF05F 0x517E      MOVS     R1,#+1065353216
+   \   00000132   0x6001             STR      R1,[R0, #+0]
+    200              if( Backup_landing == true)K = 0;
+   \                     ??Quadrotor_pid_9:
+   \   00000134   0xF8DF 0x0A70      LDR.W    R0,??Quadrotor_pid_2+0x4
+   \   00000138   0x7800             LDRB     R0,[R0, #+0]
+   \   0000013A   0x2800             CMP      R0,#+0
+   \   0000013C   0xD003             BEQ.N    ??Quadrotor_pid_10
+   \   0000013E   0xF8DF 0x0A78      LDR.W    R0,??Quadrotor_pid_2+0x14
+   \   00000142   0x2100             MOVS     R1,#+0
+   \   00000144   0x7001             STRB     R1,[R0, #+0]
+    201              /////////求出本次偏差//////////////////////////////////////////////////////////
+    202              err_pitch = des_pitch - angle_X;
+   \                     ??Quadrotor_pid_10:
+   \   00000146   0xF8DF 0x0A88      LDR.W    R0,??Quadrotor_pid_2+0x2C
+   \   0000014A   0x6800             LDR      R0,[R0, #+0]
+   \   0000014C   0x9906             LDR      R1,[SP, #+24]
+   \   0000014E   0x.... 0x....      BL       __aeabi_fsub
+   \   00000152   0x9002             STR      R0,[SP, #+8]
+    203              err_roll  = des_roll - angle_Y;
+   \   00000154   0xF8DF 0x0A7C      LDR.W    R0,??Quadrotor_pid_2+0x30
+   \   00000158   0x6800             LDR      R0,[R0, #+0]
+   \   0000015A   0x9907             LDR      R1,[SP, #+28]
+   \   0000015C   0x.... 0x....      BL       __aeabi_fsub
+   \   00000160   0x0005             MOVS     R5,R0
+    204              err_yaw   = des_yaw - angle_Z;
+   \   00000162   0xF8DF 0x0A74      LDR.W    R0,??Quadrotor_pid_2+0x34
+   \   00000166   0x6800             LDR      R0,[R0, #+0]
+   \   00000168   0x9908             LDR      R1,[SP, #+32]
+   \   0000016A   0x.... 0x....      BL       __aeabi_fsub
+   \   0000016E   0x0006             MOVS     R6,R0
+    205              err_high  = des_high - height ;
+   \   00000170   0xF8DF 0x0A48      LDR.W    R0,??Quadrotor_pid_2+0x18
+   \   00000174   0x6800             LDR      R0,[R0, #+0]
+   \   00000176   0x4641             MOV      R1,R8
+   \   00000178   0x.... 0x....      BL       __aeabi_fsub
+   \   0000017C   0x0007             MOVS     R7,R0
+    206              err_high  = err_high * K;
+   \   0000017E   0xF8DF 0x0A38      LDR.W    R0,??Quadrotor_pid_2+0x14
+   \   00000182   0x7800             LDRB     R0,[R0, #+0]
+   \   00000184   0x.... 0x....      BL       __aeabi_ui2f
+   \   00000188   0x0039             MOVS     R1,R7
+   \   0000018A   0x.... 0x....      BL       __aeabi_fmul
+   \   0000018E   0x0007             MOVS     R7,R0
+    207          
+    208          
+    209              ////////////偏差积分///////////////////////////////////////////////////////////
+    210              if(height > BaseHeight + 1 )
+   \   00000190   0xF8DF 0x0A48      LDR.W    R0,??Quadrotor_pid_2+0x38
+   \   00000194   0x8800             LDRH     R0,[R0, #+0]
+   \   00000196   0x1C40             ADDS     R0,R0,#+1
+   \   00000198   0x.... 0x....      BL       __aeabi_i2f
+   \   0000019C   0x4641             MOV      R1,R8
+   \   0000019E   0x.... 0x....      BL       __aeabi_cfcmple
+   \   000001A2   0xD226             BCS.N    ??Quadrotor_pid_11
+    211              {
+    212                  sum_err_pitch += err_pitch;
+   \   000001A4   0x9802             LDR      R0,[SP, #+8]
+   \   000001A6   0x.... 0x....      BL       __aeabi_f2d
+   \   000001AA   0xF8DF 0x4A34      LDR.W    R4,??Quadrotor_pid_2+0x3C
+   \   000001AE   0xE9D4 0x2300      LDRD     R2,R3,[R4, #+0]
+   \   000001B2   0x.... 0x....      BL       __aeabi_dadd
+   \   000001B6   0xF8DF 0x2A28      LDR.W    R2,??Quadrotor_pid_2+0x3C
+   \   000001BA   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    213                  sum_err_roll  += err_roll;
+   \   000001BE   0x0028             MOVS     R0,R5
+   \   000001C0   0x.... 0x....      BL       __aeabi_f2d
+   \   000001C4   0xF8DF 0x4A1C      LDR.W    R4,??Quadrotor_pid_2+0x40
+   \   000001C8   0xE9D4 0x2300      LDRD     R2,R3,[R4, #+0]
+   \   000001CC   0x.... 0x....      BL       __aeabi_dadd
+   \   000001D0   0xF8DF 0x2A10      LDR.W    R2,??Quadrotor_pid_2+0x40
+   \   000001D4   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    214                  sum_err_yaw   += err_yaw;
+   \   000001D8   0x0030             MOVS     R0,R6
+   \   000001DA   0x.... 0x....      BL       __aeabi_f2d
+   \   000001DE   0xF8DF 0x4A08      LDR.W    R4,??Quadrotor_pid_2+0x44
+   \   000001E2   0xE9D4 0x2300      LDRD     R2,R3,[R4, #+0]
+   \   000001E6   0x.... 0x....      BL       __aeabi_dadd
+   \   000001EA   0xF8DF 0x29FC      LDR.W    R2,??Quadrotor_pid_2+0x44
+   \   000001EE   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    215                  // k_high = 1;
+    216              }
+    217              if(Integral_high == true)
+   \                     ??Quadrotor_pid_11:
+   \   000001F2   0xF8DF 0x09F8      LDR.W    R0,??Quadrotor_pid_2+0x48
+   \   000001F6   0x7800             LDRB     R0,[R0, #+0]
+   \   000001F8   0x2800             CMP      R0,#+0
+   \   000001FA   0xD01F             BEQ.N    ??Quadrotor_pid_12
+    218              {
+    219                  Integral_high = false;
+   \   000001FC   0xF8DF 0x09EC      LDR.W    R0,??Quadrotor_pid_2+0x48
+   \   00000200   0x2100             MOVS     R1,#+0
+   \   00000202   0x7001             STRB     R1,[R0, #+0]
+    220                  sum_err_high  += err_high;
+   \   00000204   0x0038             MOVS     R0,R7
+   \   00000206   0x.... 0x....      BL       __aeabi_f2d
+   \   0000020A   0xF8DF 0x49E4      LDR.W    R4,??Quadrotor_pid_2+0x4C
+   \   0000020E   0xE9D4 0x2300      LDRD     R2,R3,[R4, #+0]
+   \   00000212   0x.... 0x....      BL       __aeabi_dadd
+   \   00000216   0xF8DF 0x29D8      LDR.W    R2,??Quadrotor_pid_2+0x4C
+   \   0000021A   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    221                  sum_err_high = sum_err_high * k_high;
+   \   0000021E   0xF8DF 0x09AC      LDR.W    R0,??Quadrotor_pid_2+0x28
+   \   00000222   0x6800             LDR      R0,[R0, #+0]
+   \   00000224   0x.... 0x....      BL       __aeabi_f2d
+   \   00000228   0xF8DF 0x49C4      LDR.W    R4,??Quadrotor_pid_2+0x4C
+   \   0000022C   0xE9D4 0x2300      LDRD     R2,R3,[R4, #+0]
+   \   00000230   0x.... 0x....      BL       __aeabi_dmul
+   \   00000234   0xF8DF 0x29B8      LDR.W    R2,??Quadrotor_pid_2+0x4C
+   \   00000238   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    222              }
+    223              //////////求出增量是偏差P///////////////////////////////////////////////////////
+    224              err_p = err_pitch - pre_err_pitch;
+   \                     ??Quadrotor_pid_12:
+   \   0000023C   0x9802             LDR      R0,[SP, #+8]
+   \   0000023E   0xF8DF 0x19B4      LDR.W    R1,??Quadrotor_pid_2+0x50
+   \   00000242   0x6809             LDR      R1,[R1, #+0]
+   \   00000244   0x.... 0x....      BL       __aeabi_fsub
+   \   00000248   0x9004             STR      R0,[SP, #+16]
+    225              err_r = err_roll  - pre_err_roll;
+   \   0000024A   0x0028             MOVS     R0,R5
+   \   0000024C   0xF8DF 0x19A8      LDR.W    R1,??Quadrotor_pid_2+0x54
+   \   00000250   0x6809             LDR      R1,[R1, #+0]
+   \   00000252   0x.... 0x....      BL       __aeabi_fsub
+   \   00000256   0x9001             STR      R0,[SP, #+4]
+    226              err_y = err_yaw   - pre_err_yaw;
+   \   00000258   0x0030             MOVS     R0,R6
+   \   0000025A   0xF8DF 0x19A0      LDR.W    R1,??Quadrotor_pid_2+0x58
+   \   0000025E   0x6809             LDR      R1,[R1, #+0]
+   \   00000260   0x.... 0x....      BL       __aeabi_fsub
+   \   00000264   0x9003             STR      R0,[SP, #+12]
+    227              err_h = err_high  - pre_err_high;
+   \   00000266   0x0038             MOVS     R0,R7
+   \   00000268   0xF8DF 0x1994      LDR.W    R1,??Quadrotor_pid_2+0x5C
+   \   0000026C   0x6809             LDR      R1,[R1, #+0]
+   \   0000026E   0x.... 0x....      BL       __aeabi_fsub
+   \   00000272   0x9000             STR      R0,[SP, #+0]
+    228          
+    229              /////////更新上一次偏差////////////////////////////////////////////////////////
+    230              pre_err_pitch = err_pitch;
+   \   00000274   0xF8DF 0x097C      LDR.W    R0,??Quadrotor_pid_2+0x50
+   \   00000278   0x9902             LDR      R1,[SP, #+8]
+   \   0000027A   0x6001             STR      R1,[R0, #+0]
+    231              pre_err_roll  = err_roll;
+   \   0000027C   0xF8DF 0x0978      LDR.W    R0,??Quadrotor_pid_2+0x54
+   \   00000280   0x6005             STR      R5,[R0, #+0]
+    232              pre_err_yaw   = err_yaw;
+   \   00000282   0xF8DF 0x0978      LDR.W    R0,??Quadrotor_pid_2+0x58
+   \   00000286   0x6006             STR      R6,[R0, #+0]
+    233              pre_err_high  = err_high;
+   \   00000288   0xF8DF 0x0974      LDR.W    R0,??Quadrotor_pid_2+0x5C
+   \   0000028C   0x6007             STR      R7,[R0, #+0]
+    234          
+    235              U1 = -Kp1 * err_high - Ki1 * sum_err_high - Kd1 * err_h;
+   \   0000028E   0xF8DF 0x0974      LDR.W    R0,??Quadrotor_pid_2+0x60
+   \   00000292   0x6800             LDR      R0,[R0, #+0]
+   \   00000294   0xF090 0x4000      EORS     R0,R0,#0x80000000
+   \   00000298   0x0039             MOVS     R1,R7
+   \   0000029A   0x.... 0x....      BL       __aeabi_fmul
+   \   0000029E   0x.... 0x....      BL       __aeabi_f2d
+   \   000002A2   0x4682             MOV      R10,R0
+   \   000002A4   0x468B             MOV      R11,R1
+   \   000002A6   0xF8DF 0x0960      LDR.W    R0,??Quadrotor_pid_2+0x64
+   \   000002AA   0x6800             LDR      R0,[R0, #+0]
+   \   000002AC   0x.... 0x....      BL       __aeabi_f2d
+   \   000002B0   0xF8DF 0x493C      LDR.W    R4,??Quadrotor_pid_2+0x4C
+   \   000002B4   0xE9D4 0x2300      LDRD     R2,R3,[R4, #+0]
+   \   000002B8   0x.... 0x....      BL       __aeabi_dmul
+   \   000002BC   0x0002             MOVS     R2,R0
+   \   000002BE   0x000B             MOVS     R3,R1
+   \   000002C0   0x4650             MOV      R0,R10
+   \   000002C2   0x4659             MOV      R1,R11
+   \   000002C4   0x.... 0x....      BL       __aeabi_dsub
+   \   000002C8   0x4682             MOV      R10,R0
+   \   000002CA   0x468B             MOV      R11,R1
+   \   000002CC   0xF8DF 0x093C      LDR.W    R0,??Quadrotor_pid_2+0x68
+   \   000002D0   0x6801             LDR      R1,[R0, #+0]
+   \   000002D2   0x9800             LDR      R0,[SP, #+0]
+   \   000002D4   0x.... 0x....      BL       __aeabi_fmul
+   \   000002D8   0x.... 0x....      BL       __aeabi_f2d
+   \   000002DC   0x0002             MOVS     R2,R0
+   \   000002DE   0x000B             MOVS     R3,R1
+   \   000002E0   0x4650             MOV      R0,R10
+   \   000002E2   0x4659             MOV      R1,R11
+   \   000002E4   0x.... 0x....      BL       __aeabi_dsub
+   \   000002E8   0x.... 0x....      BL       __aeabi_d2f
+   \   000002EC   0x0004             MOVS     R4,R0
+    236              U2 = -Kp2 * err_roll - Ki2 * sum_err_roll - Kd2 * err_r;
+   \   000002EE   0xF8DF 0x0920      LDR.W    R0,??Quadrotor_pid_2+0x6C
+   \   000002F2   0x6800             LDR      R0,[R0, #+0]
+   \   000002F4   0xF090 0x4000      EORS     R0,R0,#0x80000000
+   \   000002F8   0x0029             MOVS     R1,R5
+   \   000002FA   0x.... 0x....      BL       __aeabi_fmul
+   \   000002FE   0x.... 0x....      BL       __aeabi_f2d
+   \   00000302   0x4682             MOV      R10,R0
+   \   00000304   0x468B             MOV      R11,R1
+   \   00000306   0xF8DF 0x090C      LDR.W    R0,??Quadrotor_pid_2+0x70
+   \   0000030A   0x6800             LDR      R0,[R0, #+0]
+   \   0000030C   0x.... 0x....      BL       __aeabi_f2d
+   \   00000310   0xF8DF 0x58D0      LDR.W    R5,??Quadrotor_pid_2+0x40
+   \   00000314   0xE9D5 0x2300      LDRD     R2,R3,[R5, #+0]
+   \   00000318   0x.... 0x....      BL       __aeabi_dmul
+   \   0000031C   0x0002             MOVS     R2,R0
+   \   0000031E   0x000B             MOVS     R3,R1
+   \   00000320   0x4650             MOV      R0,R10
+   \   00000322   0x4659             MOV      R1,R11
+   \   00000324   0x.... 0x....      BL       __aeabi_dsub
+   \   00000328   0x4682             MOV      R10,R0
+   \   0000032A   0x468B             MOV      R11,R1
+   \   0000032C   0xF8DF 0x08E8      LDR.W    R0,??Quadrotor_pid_2+0x74
+   \   00000330   0x6801             LDR      R1,[R0, #+0]
+   \   00000332   0x9801             LDR      R0,[SP, #+4]
+   \   00000334   0x.... 0x....      BL       __aeabi_fmul
+   \   00000338   0x.... 0x....      BL       __aeabi_f2d
+   \   0000033C   0x0002             MOVS     R2,R0
+   \   0000033E   0x000B             MOVS     R3,R1
+   \   00000340   0x4650             MOV      R0,R10
+   \   00000342   0x4659             MOV      R1,R11
+   \   00000344   0x.... 0x....      BL       __aeabi_dsub
+   \   00000348   0x.... 0x....      BL       __aeabi_d2f
+   \   0000034C   0x4682             MOV      R10,R0
+    237              U3 = -Kp3 * err_pitch - Ki3 * sum_err_pitch - Kd3 * err_p;
+   \   0000034E   0xF8DF 0x08CC      LDR.W    R0,??Quadrotor_pid_2+0x78
+   \   00000352   0x6801             LDR      R1,[R0, #+0]
+   \   00000354   0xF091 0x4100      EORS     R1,R1,#0x80000000
+   \   00000358   0x9802             LDR      R0,[SP, #+8]
+   \   0000035A   0x.... 0x....      BL       __aeabi_fmul
+   \   0000035E   0x.... 0x....      BL       __aeabi_f2d
+   \   00000362   0xE9CD 0x0100      STRD     R0,R1,[SP, #+0]
+   \   00000366   0xF8DF 0x08B8      LDR.W    R0,??Quadrotor_pid_2+0x7C
+   \   0000036A   0x6800             LDR      R0,[R0, #+0]
+   \   0000036C   0x.... 0x....      BL       __aeabi_f2d
+   \   00000370   0xF8DF 0x586C      LDR.W    R5,??Quadrotor_pid_2+0x3C
+   \   00000374   0xE9D5 0x2300      LDRD     R2,R3,[R5, #+0]
+   \   00000378   0x.... 0x....      BL       __aeabi_dmul
+   \   0000037C   0x0002             MOVS     R2,R0
+   \   0000037E   0x000B             MOVS     R3,R1
+   \   00000380   0xE9DD 0x0100      LDRD     R0,R1,[SP, #+0]
+   \   00000384   0x.... 0x....      BL       __aeabi_dsub
+   \   00000388   0xE9CD 0x0100      STRD     R0,R1,[SP, #+0]
+   \   0000038C   0xF8DF 0x0894      LDR.W    R0,??Quadrotor_pid_2+0x80
+   \   00000390   0x6801             LDR      R1,[R0, #+0]
+   \   00000392   0x9804             LDR      R0,[SP, #+16]
+   \   00000394   0x.... 0x....      BL       __aeabi_fmul
+   \   00000398   0x.... 0x....      BL       __aeabi_f2d
+   \   0000039C   0x0002             MOVS     R2,R0
+   \   0000039E   0x000B             MOVS     R3,R1
+   \   000003A0   0xE9DD 0x0100      LDRD     R0,R1,[SP, #+0]
+   \   000003A4   0x.... 0x....      BL       __aeabi_dsub
+   \   000003A8   0x.... 0x....      BL       __aeabi_d2f
+   \   000003AC   0x4681             MOV      R9,R0
+    238              U4 = -Kp4 * err_yaw - Ki4 * sum_err_yaw - Kd4 * err_y;
+   \   000003AE   0xF8DF 0x0878      LDR.W    R0,??Quadrotor_pid_2+0x84
+   \   000003B2   0x6800             LDR      R0,[R0, #+0]
+   \   000003B4   0xF090 0x4000      EORS     R0,R0,#0x80000000
+   \   000003B8   0x0031             MOVS     R1,R6
+   \   000003BA   0x.... 0x....      BL       __aeabi_fmul
+   \   000003BE   0x.... 0x....      BL       __aeabi_f2d
+   \   000003C2   0x0006             MOVS     R6,R0
+   \   000003C4   0x000F             MOVS     R7,R1
+   \   000003C6   0xF8DF 0x0864      LDR.W    R0,??Quadrotor_pid_2+0x88
+   \   000003CA   0x6800             LDR      R0,[R0, #+0]
+   \   000003CC   0x.... 0x....      BL       __aeabi_f2d
+   \   000003D0   0xF8DF 0x5814      LDR.W    R5,??Quadrotor_pid_2+0x44
+   \   000003D4   0xE9D5 0x2300      LDRD     R2,R3,[R5, #+0]
+   \   000003D8   0x.... 0x....      BL       __aeabi_dmul
+   \   000003DC   0x0002             MOVS     R2,R0
+   \   000003DE   0x000B             MOVS     R3,R1
+   \   000003E0   0x0030             MOVS     R0,R6
+   \   000003E2   0x0039             MOVS     R1,R7
+   \   000003E4   0x.... 0x....      BL       __aeabi_dsub
+   \   000003E8   0x0006             MOVS     R6,R0
+   \   000003EA   0x000F             MOVS     R7,R1
+   \   000003EC   0xF8DF 0x0840      LDR.W    R0,??Quadrotor_pid_2+0x8C
+   \   000003F0   0x6801             LDR      R1,[R0, #+0]
+   \   000003F2   0x9803             LDR      R0,[SP, #+12]
+   \   000003F4   0x.... 0x....      BL       __aeabi_fmul
+   \   000003F8   0x.... 0x....      BL       __aeabi_f2d
+   \   000003FC   0x0002             MOVS     R2,R0
+   \   000003FE   0x000B             MOVS     R3,R1
+   \   00000400   0x0030             MOVS     R0,R6
+   \   00000402   0x0039             MOVS     R1,R7
+   \   00000404   0x.... 0x....      BL       __aeabi_dsub
+   \   00000408   0x.... 0x....      BL       __aeabi_d2f
+   \   0000040C   0x4683             MOV      R11,R0
+    239          
+    240              //////////求出对应电机的PWM////////////////////////////////////////////////////
+    241              W1 = U1 / 4 - U3 / 2 - U4 / 4;
+   \   0000040E   0x0020             MOVS     R0,R4
+   \   00000410   0xF05F 0x4181      MOVS     R1,#+1082130432
+   \   00000414   0x.... 0x....      BL       __aeabi_fdiv
+   \   00000418   0x0005             MOVS     R5,R0
+   \   0000041A   0x4648             MOV      R0,R9
+   \   0000041C   0xF05F 0x4180      MOVS     R1,#+1073741824
+   \   00000420   0x.... 0x....      BL       __aeabi_fdiv
+   \   00000424   0x0001             MOVS     R1,R0
+   \   00000426   0x0028             MOVS     R0,R5
+   \   00000428   0x.... 0x....      BL       __aeabi_fsub
+   \   0000042C   0x0005             MOVS     R5,R0
+   \   0000042E   0x4658             MOV      R0,R11
+   \   00000430   0xF05F 0x4181      MOVS     R1,#+1082130432
+   \   00000434   0x.... 0x....      BL       __aeabi_fdiv
+   \   00000438   0x0001             MOVS     R1,R0
+   \   0000043A   0x0028             MOVS     R0,R5
+   \   0000043C   0x.... 0x....      BL       __aeabi_fsub
+   \   00000440   0x9005             STR      R0,[SP, #+20]
+    242              W2 = U1 / 4 - U2 / 2 + U4 / 4;
+   \   00000442   0x0020             MOVS     R0,R4
+   \   00000444   0xF05F 0x4181      MOVS     R1,#+1082130432
+   \   00000448   0x.... 0x....      BL       __aeabi_fdiv
+   \   0000044C   0x0005             MOVS     R5,R0
+   \   0000044E   0x4650             MOV      R0,R10
+   \   00000450   0xF05F 0x4180      MOVS     R1,#+1073741824
+   \   00000454   0x.... 0x....      BL       __aeabi_fdiv
+   \   00000458   0x0001             MOVS     R1,R0
+   \   0000045A   0x0028             MOVS     R0,R5
+   \   0000045C   0x.... 0x....      BL       __aeabi_fsub
+   \   00000460   0x0005             MOVS     R5,R0
+   \   00000462   0x4658             MOV      R0,R11
+   \   00000464   0xF05F 0x4181      MOVS     R1,#+1082130432
+   \   00000468   0x.... 0x....      BL       __aeabi_fdiv
+   \   0000046C   0x0029             MOVS     R1,R5
+   \   0000046E   0x.... 0x....      BL       __aeabi_fadd
+   \   00000472   0x9004             STR      R0,[SP, #+16]
+    243              W3 = U1 / 4 + U3 / 2 - U4 / 4;
+   \   00000474   0x0020             MOVS     R0,R4
+   \   00000476   0xF05F 0x4181      MOVS     R1,#+1082130432
+   \   0000047A   0x.... 0x....      BL       __aeabi_fdiv
+   \   0000047E   0x0005             MOVS     R5,R0
+   \   00000480   0x4648             MOV      R0,R9
+   \   00000482   0xF05F 0x4180      MOVS     R1,#+1073741824
+   \   00000486   0x.... 0x....      BL       __aeabi_fdiv
+   \   0000048A   0x0029             MOVS     R1,R5
+   \   0000048C   0x.... 0x....      BL       __aeabi_fadd
+   \   00000490   0x0005             MOVS     R5,R0
+   \   00000492   0x4658             MOV      R0,R11
+   \   00000494   0xF05F 0x4181      MOVS     R1,#+1082130432
+   \   00000498   0x.... 0x....      BL       __aeabi_fdiv
+   \   0000049C   0x0001             MOVS     R1,R0
+   \   0000049E   0x0028             MOVS     R0,R5
+   \   000004A0   0x.... 0x....      BL       __aeabi_fsub
+   \   000004A4   0x9003             STR      R0,[SP, #+12]
+    244              W4 = U1 / 4 + U2 / 2 + U4 / 4;
+   \   000004A6   0x0020             MOVS     R0,R4
+   \   000004A8   0xF05F 0x4181      MOVS     R1,#+1082130432
+   \   000004AC   0x.... 0x....      BL       __aeabi_fdiv
+   \   000004B0   0x0004             MOVS     R4,R0
+   \   000004B2   0x4650             MOV      R0,R10
+   \   000004B4   0xF05F 0x4180      MOVS     R1,#+1073741824
+   \   000004B8   0x.... 0x....      BL       __aeabi_fdiv
+   \   000004BC   0x0021             MOVS     R1,R4
+   \   000004BE   0x.... 0x....      BL       __aeabi_fadd
+   \   000004C2   0x0004             MOVS     R4,R0
+   \   000004C4   0x4658             MOV      R0,R11
+   \   000004C6   0xF05F 0x4181      MOVS     R1,#+1082130432
+   \   000004CA   0x.... 0x....      BL       __aeabi_fdiv
+   \   000004CE   0x0021             MOVS     R1,R4
+   \   000004D0   0x.... 0x....      BL       __aeabi_fadd
+   \   000004D4   0x9002             STR      R0,[SP, #+8]
+    245          
+    246              if(Backup_landing == false && Landing == false && (height - BaseHeight) <= 3 )count = count + 0.2;
+   \   000004D6   0xF8DF 0x06D0      LDR.W    R0,??Quadrotor_pid_2+0x4
+   \   000004DA   0x7800             LDRB     R0,[R0, #+0]
+   \   000004DC   0xF8DF 0x16C4      LDR.W    R1,??Quadrotor_pid_2
+   \   000004E0   0x7809             LDRB     R1,[R1, #+0]
+   \   000004E2   0x4308             ORRS     R0,R1,R0
+   \   000004E4   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   000004E6   0x2800             CMP      R0,#+0
+   \   000004E8   0xD11D             BNE.N    ??Quadrotor_pid_13
+   \   000004EA   0xF8DF 0x06F0      LDR.W    R0,??Quadrotor_pid_2+0x38
+   \   000004EE   0x8800             LDRH     R0,[R0, #+0]
+   \   000004F0   0x.... 0x....      BL       __aeabi_ui2f
+   \   000004F4   0x0001             MOVS     R1,R0
+   \   000004F6   0x4640             MOV      R0,R8
+   \   000004F8   0x.... 0x....      BL       __aeabi_fsub
+   \   000004FC   0xF8DF 0x1E14      LDR.W    R1,??Quadrotor_pid_14  ;; 0x40400001
+   \   00000500   0x.... 0x....      BL       __aeabi_cfcmple
+   \   00000504   0xD20F             BCS.N    ??Quadrotor_pid_13
+   \   00000506   0xF8DF 0x0E10      LDR.W    R0,??Quadrotor_pid_14+0x4
+   \   0000050A   0x6800             LDR      R0,[R0, #+0]
+   \   0000050C   0x.... 0x....      BL       __aeabi_f2d
+   \   00000510   0xF8DF 0x2E08      LDR.W    R2,??Quadrotor_pid_14+0x8  ;; 0x9999999a
+   \   00000514   0xF8DF 0x3E08      LDR.W    R3,??Quadrotor_pid_14+0xC  ;; 0x3fc99999
+   \   00000518   0x.... 0x....      BL       __aeabi_dadd
+   \   0000051C   0x.... 0x....      BL       __aeabi_d2f
+   \   00000520   0xF8DF 0x1DF4      LDR.W    R1,??Quadrotor_pid_14+0x4
+   \   00000524   0x6008             STR      R0,[R1, #+0]
+    247              if(Landing == true && des_high > 2 ) des_high -= 0.1 ; //安全降落
+   \                     ??Quadrotor_pid_13:
+   \   00000526   0xF8DF 0x067C      LDR.W    R0,??Quadrotor_pid_2
+   \   0000052A   0x7800             LDRB     R0,[R0, #+0]
+   \   0000052C   0x2800             CMP      R0,#+0
+   \   0000052E   0xD017             BEQ.N    ??Quadrotor_pid_15
+   \   00000530   0xF8DF 0x0688      LDR.W    R0,??Quadrotor_pid_2+0x18
+   \   00000534   0x6800             LDR      R0,[R0, #+0]
+   \   00000536   0xF8DF 0x1DEC      LDR.W    R1,??Quadrotor_pid_14+0x10  ;; 0x40000001
+   \   0000053A   0x.... 0x....      BL       __aeabi_cfrcmple
+   \   0000053E   0xD80F             BHI.N    ??Quadrotor_pid_15
+   \   00000540   0xF8DF 0x0678      LDR.W    R0,??Quadrotor_pid_2+0x18
+   \   00000544   0x6800             LDR      R0,[R0, #+0]
+   \   00000546   0x.... 0x....      BL       __aeabi_f2d
+   \   0000054A   0xF8DF 0x2DD0      LDR.W    R2,??Quadrotor_pid_14+0x8  ;; 0x9999999a
+   \   0000054E   0xF8DF 0x3DD8      LDR.W    R3,??Quadrotor_pid_14+0x14  ;; 0xbfb99999
+   \   00000552   0x.... 0x....      BL       __aeabi_dadd
+   \   00000556   0x.... 0x....      BL       __aeabi_d2f
+   \   0000055A   0xF8DF 0x1660      LDR.W    R1,??Quadrotor_pid_2+0x18
+   \   0000055E   0x6008             STR      R0,[R1, #+0]
+    248              if(Landing == true && abs(height - BaseHeight) <= 12)Stop_flag = true;         //降落离地低于5cm关螺旋桨
+   \                     ??Quadrotor_pid_15:
+   \   00000560   0xF8DF 0x0640      LDR.W    R0,??Quadrotor_pid_2
+   \   00000564   0x7800             LDRB     R0,[R0, #+0]
+   \   00000566   0x2800             CMP      R0,#+0
+   \   00000568   0xD012             BEQ.N    ??Quadrotor_pid_16
+   \   0000056A   0xF8DF 0x0670      LDR.W    R0,??Quadrotor_pid_2+0x38
+   \   0000056E   0x8800             LDRH     R0,[R0, #+0]
+   \   00000570   0x.... 0x....      BL       __aeabi_ui2f
+   \   00000574   0x0001             MOVS     R1,R0
+   \   00000576   0x4640             MOV      R0,R8
+   \   00000578   0x.... 0x....      BL       __aeabi_fsub
+   \   0000057C   0x.... 0x....      BL       __aeabi_f2iz
+   \   00000580   0x.... 0x....      BL       abs
+   \   00000584   0x280D             CMP      R0,#+13
+   \   00000586   0xDA03             BGE.N    ??Quadrotor_pid_16
+   \   00000588   0xF8DF 0x0DA0      LDR.W    R0,??Quadrotor_pid_14+0x18
+   \   0000058C   0x2101             MOVS     R1,#+1
+   \   0000058E   0x7001             STRB     R1,[R0, #+0]
+    249              if(Backup_landing == true && count >= 450 )count = count - 0.25 ;          //高度传感器错误，备用降落
+   \                     ??Quadrotor_pid_16:
+   \   00000590   0xF8DF 0x0614      LDR.W    R0,??Quadrotor_pid_2+0x4
+   \   00000594   0x7800             LDRB     R0,[R0, #+0]
+   \   00000596   0x2800             CMP      R0,#+0
+   \   00000598   0xD016             BEQ.N    ??Quadrotor_pid_17
+   \   0000059A   0xF8DF 0x0D7C      LDR.W    R0,??Quadrotor_pid_14+0x4
+   \   0000059E   0x6800             LDR      R0,[R0, #+0]
+   \   000005A0   0xF8DF 0x1D8C      LDR.W    R1,??Quadrotor_pid_14+0x1C  ;; 0x43e10000
+   \   000005A4   0x.... 0x....      BL       __aeabi_cfrcmple
+   \   000005A8   0xD80E             BHI.N    ??Quadrotor_pid_17
+   \   000005AA   0xF8DF 0x0D6C      LDR.W    R0,??Quadrotor_pid_14+0x4
+   \   000005AE   0x6800             LDR      R0,[R0, #+0]
+   \   000005B0   0x.... 0x....      BL       __aeabi_f2d
+   \   000005B4   0x2200             MOVS     R2,#+0
+   \   000005B6   0xF8DF 0x3D7C      LDR.W    R3,??Quadrotor_pid_14+0x20  ;; 0xbfd00000
+   \   000005BA   0x.... 0x....      BL       __aeabi_dadd
+   \   000005BE   0x.... 0x....      BL       __aeabi_d2f
+   \   000005C2   0xF8DF 0x1D54      LDR.W    R1,??Quadrotor_pid_14+0x4
+   \   000005C6   0x6008             STR      R0,[R1, #+0]
+    250              if(Time_counter *T / 1000 >= 150 )Landing = true ;                         //飞行时间超过200s自动降落
+   \                     ??Quadrotor_pid_17:
+   \   000005C8   0xF8DF 0x0D6C      LDR.W    R0,??Quadrotor_pid_14+0x24
+   \   000005CC   0x6800             LDR      R0,[R0, #+0]
+   \   000005CE   0x.... 0x....      BL       __aeabi_ui2d
+   \   000005D2   0x2200             MOVS     R2,#+0
+   \   000005D4   0xF8DF 0x3D64      LDR.W    R3,??Quadrotor_pid_14+0x28  ;; 0x40040000
+   \   000005D8   0x.... 0x....      BL       __aeabi_dmul
+   \   000005DC   0x2200             MOVS     R2,#+0
+   \   000005DE   0xF8DF 0x3D60      LDR.W    R3,??Quadrotor_pid_14+0x2C  ;; 0x408f4000
+   \   000005E2   0x.... 0x....      BL       __aeabi_ddiv
+   \   000005E6   0x2200             MOVS     R2,#+0
+   \   000005E8   0xF8DF 0x3D58      LDR.W    R3,??Quadrotor_pid_14+0x30  ;; 0x4062c000
+   \   000005EC   0x.... 0x....      BL       __aeabi_cdrcmple
+   \   000005F0   0xD803             BHI.N    ??Quadrotor_pid_18
+   \   000005F2   0xF8DF 0x05B0      LDR.W    R0,??Quadrotor_pid_2
+   \   000005F6   0x2101             MOVS     R1,#+1
+   \   000005F8   0x7001             STRB     R1,[R0, #+0]
+    251              
+    252              //if(Time_counter - COUNTER >= 11000 && count >= 400){count -=  1; Landing = 0;}//超声波和遥控出错降落
+    253          
+    254              BASE_VALUE = 1000 + (int)count;
+   \                     ??Quadrotor_pid_18:
+   \   000005FA   0xF8DF 0x0D1C      LDR.W    R0,??Quadrotor_pid_14+0x4
+   \   000005FE   0x6800             LDR      R0,[R0, #+0]
+   \   00000600   0x.... 0x....      BL       __aeabi_f2iz
+   \   00000604   0xF510 0x707A      ADDS     R0,R0,#+1000
+   \   00000608   0xF8DF 0x1D3C      LDR.W    R1,??Quadrotor_pid_14+0x34
+   \   0000060C   0x8008             STRH     R0,[R1, #+0]
+    255              // BASE_VALUE = 1000;
+    256              static double sum_axisx = 0;
+    257              static double sum_axisy = 0;
+    258              static float target_x = 0;
+    259              static float target_y = 0;
+    260              static float dot_targetx = 0;
+    261              static float dot_targety = 0;
+    262          
+    263              static float des_x = 0;
+    264              static float des_y = 0;
+    265          
+    266              float err_dotvx = 0;
+   \   0000060E   0x2000             MOVS     R0,#+0
+    267              float err_dotvy = 0;
+   \   00000610   0x2100             MOVS     R1,#+0
+    268              float err_vx=0;
+   \   00000612   0x2400             MOVS     R4,#+0
+    269              float err_vy=0;
+   \   00000614   0x2500             MOVS     R5,#+0
+    270          
+    271              static float last_dotx = 0, last_doty = 0;
+    272              static float lastx=0,lasty=0;
+    273              static float des_vx=0,des_vy=0;
+    274              float meanvx=0,meanvy=0;
+   \   00000616   0x2200             MOVS     R2,#+0
+   \   00000618   0x2300             MOVS     R3,#+0
+    275              float xpos=0,ypos=0;
+   \   0000061A   0x2600             MOVS     R6,#+0
+   \   0000061C   0x2700             MOVS     R7,#+0
+    276              extern bool send_data;
+    277                  sendcount++;
+   \   0000061E   0xF8DF 0xCD2C      LDR.W    R12,??Quadrotor_pid_14+0x38
+   \   00000622   0xF8DC 0xC000      LDR      R12,[R12, #+0]
+   \   00000626   0xF11C 0x0C01      ADDS     R12,R12,#+1
+   \   0000062A   0xF8DF 0xED20      LDR.W    LR,??Quadrotor_pid_14+0x38
+   \   0000062E   0xF8CE 0xC000      STR      R12,[LR, #+0]
+    278                  if(send_data == true)
+   \   00000632   0xF8DF 0xCD1C      LDR.W    R12,??Quadrotor_pid_14+0x3C
+   \   00000636   0xF89C 0xC000      LDRB     R12,[R12, #+0]
+   \   0000063A   0xF1BC 0x0F00      CMP      R12,#+0
+   \   0000063E   0xD013             BEQ.N    ??Quadrotor_pid_19
+    279                  {
+    280                    //sendcount =0;
+    281                    SendFloat(angle_X0,UART1);
+   \   00000640   0xF8DF 0x1D10      LDR.W    R1,??Quadrotor_pid_14+0x40  ;; 0x4006b000
+   \   00000644   0x9814             LDR      R0,[SP, #+80]
+   \   00000646   0x.... 0x....      BL       SendFloat
+    282                    SendFloat(angle_Y0,UART1);
+   \   0000064A   0xF8DF 0x1D08      LDR.W    R1,??Quadrotor_pid_14+0x40  ;; 0x4006b000
+   \   0000064E   0x9815             LDR      R0,[SP, #+84]
+   \   00000650   0x.... 0x....      BL       SendFloat
+    283                    SendFloat(angle_Z0,UART1);
+   \   00000654   0xF8DF 0x1CFC      LDR.W    R1,??Quadrotor_pid_14+0x40  ;; 0x4006b000
+   \   00000658   0x9816             LDR      R0,[SP, #+88]
+   \   0000065A   0x.... 0x....      BL       SendFloat
+    284                    SendFloat(height,UART1);
+   \   0000065E   0xF8DF 0x1CF4      LDR.W    R1,??Quadrotor_pid_14+0x40  ;; 0x4006b000
+   \   00000662   0x4640             MOV      R0,R8
+   \   00000664   0x.... 0x....      BL       SendFloat
+    285                  }
+    286              
+    287              
+    288              if((int)(Time_counter * T) % OptSamTime == 0)
+   \                     ??Quadrotor_pid_19:
+   \   00000668   0xF8DF 0x0CCC      LDR.W    R0,??Quadrotor_pid_14+0x24
+   \   0000066C   0x6800             LDR      R0,[R0, #+0]
+   \   0000066E   0x.... 0x....      BL       __aeabi_ui2d
+   \   00000672   0x2200             MOVS     R2,#+0
+   \   00000674   0xF8DF 0x3CC4      LDR.W    R3,??Quadrotor_pid_14+0x28  ;; 0x40040000
+   \   00000678   0x.... 0x....      BL       __aeabi_dmul
+   \   0000067C   0x.... 0x....      BL       __aeabi_d2iz
+   \   00000680   0x211E             MOVS     R1,#+30
+   \   00000682   0xFB90 0xF2F1      SDIV     R2,R0,R1
+   \   00000686   0xFB01 0x0012      MLS      R0,R1,R2,R0
+   \   0000068A   0x2800             CMP      R0,#+0
+   \   0000068C   0xF040 0x855A      BNE.W    ??Quadrotor_pid_20
+    289              {
+    290          
+    291                  ReadANDS3080();
+   \   00000690   0x.... 0x....      BL       ReadANDS3080
+    292                  
+    293                  //=======================================
+    294          
+    295                  
+    296                  
+    297                  
+    298                 if(signal_target==false && high_f==1) //
+   \   00000694   0xF8DF 0x0D30      LDR.W    R0,??Quadrotor_pid_21
+   \   00000698   0x7800             LDRB     R0,[R0, #+0]
+   \   0000069A   0x2800             CMP      R0,#+0
+   \   0000069C   0xF040 0x808B      BNE.W    ??Quadrotor_pid_22
+   \   000006A0   0xF8DF 0x0510      LDR.W    R0,??Quadrotor_pid_2+0x10
+   \   000006A4   0x7800             LDRB     R0,[R0, #+0]
+   \   000006A6   0x2801             CMP      R0,#+1
+   \   000006A8   0xF040 0x8085      BNE.W    ??Quadrotor_pid_22
+    299                 {
+    300                   
+    301                   
+    302                    if(steerFlag==0)
+   \   000006AC   0xF8DF 0x0D1C      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   000006B0   0x7800             LDRB     R0,[R0, #+0]
+   \   000006B2   0x2800             CMP      R0,#+0
+   \   000006B4   0xD10B             BNE.N    ??Quadrotor_pid_23
+    303                    {
+    304                       PWM_Y=1020;
+   \   000006B6   0xF8DF 0x0D18      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   000006BA   0xF44F 0x717F      MOV      R1,#+1020
+   \   000006BE   0x6001             STR      R1,[R0, #+0]
+    305                       PWM_X+=22;
+   \   000006C0   0xF8DF 0x0D10      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   000006C4   0x6800             LDR      R0,[R0, #+0]
+   \   000006C6   0x3016             ADDS     R0,R0,#+22
+   \   000006C8   0xF8DF 0x1D08      LDR.W    R1,??Quadrotor_pid_21+0xC
+   \   000006CC   0x6008             STR      R0,[R1, #+0]
+    306                    }
+    307                    if(PWM_X>=2100&&steerFlag==0)
+   \                     ??Quadrotor_pid_23:
+   \   000006CE   0xF8DF 0x0D04      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   000006D2   0x6800             LDR      R0,[R0, #+0]
+   \   000006D4   0xF640 0x0134      MOVW     R1,#+2100
+   \   000006D8   0x4288             CMP      R0,R1
+   \   000006DA   0xDB08             BLT.N    ??Quadrotor_pid_24
+   \   000006DC   0xF8DF 0x0CEC      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   000006E0   0x7800             LDRB     R0,[R0, #+0]
+   \   000006E2   0x2800             CMP      R0,#+0
+   \   000006E4   0xD103             BNE.N    ??Quadrotor_pid_24
+    308                    {
+    309                       steerFlag=1;
+   \   000006E6   0xF8DF 0x0CE4      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   000006EA   0x2101             MOVS     R1,#+1
+   \   000006EC   0x7001             STRB     R1,[R0, #+0]
+    310                    } 
+    311                    if(steerFlag==1)
+   \                     ??Quadrotor_pid_24:
+   \   000006EE   0xF8DF 0x0CDC      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   000006F2   0x7800             LDRB     R0,[R0, #+0]
+   \   000006F4   0x2801             CMP      R0,#+1
+   \   000006F6   0xD10B             BNE.N    ??Quadrotor_pid_25
+    312                    {
+    313                       PWM_X-=22;
+   \   000006F8   0xF8DF 0x0CD8      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   000006FC   0x6800             LDR      R0,[R0, #+0]
+   \   000006FE   0x3816             SUBS     R0,R0,#+22
+   \   00000700   0xF8DF 0x1CD0      LDR.W    R1,??Quadrotor_pid_21+0xC
+   \   00000704   0x6008             STR      R0,[R1, #+0]
+    314                       PWM_Y=1200;
+   \   00000706   0xF8DF 0x0CC8      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   0000070A   0xF44F 0x6196      MOV      R1,#+1200
+   \   0000070E   0x6001             STR      R1,[R0, #+0]
+    315                    }
+    316                    if(PWM_X<=700&&steerFlag==1)
+   \                     ??Quadrotor_pid_25:
+   \   00000710   0xF8DF 0x0CC0      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   00000714   0x6800             LDR      R0,[R0, #+0]
+   \   00000716   0xF5B0 0x7F2F      CMP      R0,#+700
+   \   0000071A   0xDC08             BGT.N    ??Quadrotor_pid_26
+   \   0000071C   0xF8DF 0x0CAC      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   00000720   0x7800             LDRB     R0,[R0, #+0]
+   \   00000722   0x2801             CMP      R0,#+1
+   \   00000724   0xD103             BNE.N    ??Quadrotor_pid_26
+    317                    {
+    318                       steerFlag=2;
+   \   00000726   0xF8DF 0x0CA4      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   0000072A   0x2102             MOVS     R1,#+2
+   \   0000072C   0x7001             STRB     R1,[R0, #+0]
+    319                    }
+    320                    if(steerFlag==2)
+   \                     ??Quadrotor_pid_26:
+   \   0000072E   0xF8DF 0x0C9C      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   00000732   0x7800             LDRB     R0,[R0, #+0]
+   \   00000734   0x2802             CMP      R0,#+2
+   \   00000736   0xD10B             BNE.N    ??Quadrotor_pid_27
+    321                    {
+    322                       PWM_Y=1450;
+   \   00000738   0xF8DF 0x0C94      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   0000073C   0xF240 0x51AA      MOVW     R1,#+1450
+   \   00000740   0x6001             STR      R1,[R0, #+0]
+    323                       PWM_X+=22;
+   \   00000742   0xF8DF 0x0C90      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   00000746   0x6800             LDR      R0,[R0, #+0]
+   \   00000748   0x3016             ADDS     R0,R0,#+22
+   \   0000074A   0xF8DF 0x1C88      LDR.W    R1,??Quadrotor_pid_21+0xC
+   \   0000074E   0x6008             STR      R0,[R1, #+0]
+    324                    }
+    325                    if(PWM_X>=2100&&steerFlag==2)
+   \                     ??Quadrotor_pid_27:
+   \   00000750   0xF8DF 0x0C80      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   00000754   0x6800             LDR      R0,[R0, #+0]
+   \   00000756   0xF640 0x0134      MOVW     R1,#+2100
+   \   0000075A   0x4288             CMP      R0,R1
+   \   0000075C   0xDB08             BLT.N    ??Quadrotor_pid_28
+   \   0000075E   0xF8DF 0x0C6C      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   00000762   0x7800             LDRB     R0,[R0, #+0]
+   \   00000764   0x2802             CMP      R0,#+2
+   \   00000766   0xD103             BNE.N    ??Quadrotor_pid_28
+    326                    {
+    327                       steerFlag=3;
+   \   00000768   0xF8DF 0x0C60      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   0000076C   0x2103             MOVS     R1,#+3
+   \   0000076E   0x7001             STRB     R1,[R0, #+0]
+    328                    }
+    329                    if(steerFlag==3)
+   \                     ??Quadrotor_pid_28:
+   \   00000770   0xF8DF 0x0C58      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   00000774   0x7800             LDRB     R0,[R0, #+0]
+   \   00000776   0x2803             CMP      R0,#+3
+   \   00000778   0xD10B             BNE.N    ??Quadrotor_pid_29
+    330                    {
+    331                       PWM_Y=1600;
+   \   0000077A   0xF8DF 0x0C54      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   0000077E   0xF44F 0x61C8      MOV      R1,#+1600
+   \   00000782   0x6001             STR      R1,[R0, #+0]
+    332                       PWM_X-=22;
+   \   00000784   0xF8DF 0x0C4C      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   00000788   0x6800             LDR      R0,[R0, #+0]
+   \   0000078A   0x3816             SUBS     R0,R0,#+22
+   \   0000078C   0xF8DF 0x1C44      LDR.W    R1,??Quadrotor_pid_21+0xC
+   \   00000790   0x6008             STR      R0,[R1, #+0]
+    333                    }
+    334                     if(PWM_X<=700&&steerFlag==3)
+   \                     ??Quadrotor_pid_29:
+   \   00000792   0xF8DF 0x0C40      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   00000796   0x6800             LDR      R0,[R0, #+0]
+   \   00000798   0xF5B0 0x7F2F      CMP      R0,#+700
+   \   0000079C   0xF300 0x80DF      BGT.W    ??Quadrotor_pid_30
+   \   000007A0   0xF8DF 0x0C28      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   000007A4   0x7800             LDRB     R0,[R0, #+0]
+   \   000007A6   0x2803             CMP      R0,#+3
+   \   000007A8   0xF040 0x80D9      BNE.W    ??Quadrotor_pid_30
+    335                    {
+    336                       steerFlag=0;
+   \   000007AC   0xF8DF 0x0C1C      LDR.W    R0,??Quadrotor_pid_21+0x4
+   \   000007B0   0x2100             MOVS     R1,#+0
+   \   000007B2   0x7001             STRB     R1,[R0, #+0]
+   \   000007B4   0xE0D3             B.N      ??Quadrotor_pid_30
+    337                    }
+    338                   
+    339                 }
+    340                 else
+    341                 {         
+    342                   
+    343          
+    344          
+    345                    //==============计算摄像头与地面夹角，即外参数==================================
+    346                   
+    347                    //定义坐标
+    348                    //Teta=-angle_X*3.14/180;//绕飞行器Y轴逆时针
+    349                    //Phi=angle_Y*3.14/180;//绕飞行器x轴逆时针旋转
+    350                    //Alphard=( PWM_X - 1350 )*3.14 / 1900;//定义X轴为云台正方向，Z轴向下，y轴向右
+    351                    //Beta   =( PWM_Y -850 )*3.14 / 1900;
+    352                   
+    353                    
+    354                    //计算出云台与地面夹角
+    355                    //==============计算摄像头与地面夹角，即外参数==================================
+    356                   
+    357                   // image_distance=108/cos(AY);//摄像头物距
+    358          
+    359                    
+    360                    //修正参数，计算像素坐标到图像中心点的实际距离
+    361                    if(re_X !=0 && re_Y !=0)
+   \                     ??Quadrotor_pid_22:
+   \   000007B6   0xF8DF 0x0C20      LDR.W    R0,??Quadrotor_pid_21+0x10
+   \   000007BA   0x6800             LDR      R0,[R0, #+0]
+   \   000007BC   0x2800             CMP      R0,#+0
+   \   000007BE   0xF000 0x80B7      BEQ.W    ??Quadrotor_pid_31
+   \   000007C2   0xF8DF 0x0C18      LDR.W    R0,??Quadrotor_pid_21+0x14
+   \   000007C6   0x6800             LDR      R0,[R0, #+0]
+   \   000007C8   0x2800             CMP      R0,#+0
+   \   000007CA   0xF000 0x80B1      BEQ.W    ??Quadrotor_pid_31
+    362                    {
+    363                     
+    364                      //=====================云台控制，利用像素转换为角度==================
+    365                      err_angX = atan2((float)re_X,450);
+   \   000007CE   0x2200             MOVS     R2,#+0
+   \   000007D0   0xF8DF 0x3C0C      LDR.W    R3,??Quadrotor_pid_21+0x18  ;; 0x407c2000
+   \   000007D4   0x0014             MOVS     R4,R2
+   \   000007D6   0x001D             MOVS     R5,R3
+   \   000007D8   0xF8DF 0x0BFC      LDR.W    R0,??Quadrotor_pid_21+0x10
+   \   000007DC   0x6800             LDR      R0,[R0, #+0]
+   \   000007DE   0x.... 0x....      BL       __aeabi_i2f
+   \   000007E2   0x.... 0x....      BL       __aeabi_f2d
+   \   000007E6   0x0022             MOVS     R2,R4
+   \   000007E8   0x002B             MOVS     R3,R5
+   \   000007EA   0x.... 0x....      BL       atan2
+   \   000007EE   0x.... 0x....      BL       __aeabi_d2f
+   \   000007F2   0xF8DF 0x1BF0      LDR.W    R1,??Quadrotor_pid_21+0x1C
+   \   000007F6   0x6008             STR      R0,[R1, #+0]
+    366                      err_angY = atan2((float)re_Y,471);
+   \   000007F8   0x2200             MOVS     R2,#+0
+   \   000007FA   0xF8DF 0x3BEC      LDR.W    R3,??Quadrotor_pid_21+0x20  ;; 0x407d7000
+   \   000007FE   0x0014             MOVS     R4,R2
+   \   00000800   0x001D             MOVS     R5,R3
+   \   00000802   0xF8DF 0x0BD8      LDR.W    R0,??Quadrotor_pid_21+0x14
+   \   00000806   0x6800             LDR      R0,[R0, #+0]
+   \   00000808   0x.... 0x....      BL       __aeabi_i2f
+   \   0000080C   0x.... 0x....      BL       __aeabi_f2d
+   \   00000810   0x0022             MOVS     R2,R4
+   \   00000812   0x002B             MOVS     R3,R5
+   \   00000814   0x.... 0x....      BL       atan2
+   \   00000818   0x.... 0x....      BL       __aeabi_d2f
+   \   0000081C   0xF8DF 0x1BCC      LDR.W    R1,??Quadrotor_pid_21+0x24
+   \   00000820   0x6008             STR      R0,[R1, #+0]
+    367                      
+    368                      pre_err_angX=err_angX; 
+   \   00000822   0xF8DF 0x0BCC      LDR.W    R0,??Quadrotor_pid_21+0x28
+   \   00000826   0xF8DF 0x1BBC      LDR.W    R1,??Quadrotor_pid_21+0x1C
+   \   0000082A   0x6809             LDR      R1,[R1, #+0]
+   \   0000082C   0x6001             STR      R1,[R0, #+0]
+    369                      pre_err_angY=err_angY;
+   \   0000082E   0xF8DF 0x0BC4      LDR.W    R0,??Quadrotor_pid_21+0x2C
+   \   00000832   0xF8DF 0x1BB8      LDR.W    R1,??Quadrotor_pid_21+0x24
+   \   00000836   0x6809             LDR      R1,[R1, #+0]
+   \   00000838   0x6001             STR      R1,[R0, #+0]
+    370                      //=====================云台控制，利用像素转换为角度==================
+    371                      
+    372                    
+    373                      
+    374                     PWM_X=(int)(PWM_X-(0.20*err_angX)*1200 - 0.12*(err_angX - pre_err_angX)*1200);//600--2300(1370y轴负方向)
+   \   0000083A   0xF8DF 0x0B98      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   0000083E   0x6800             LDR      R0,[R0, #+0]
+   \   00000840   0x.... 0x....      BL       __aeabi_i2d
+   \   00000844   0x0004             MOVS     R4,R0
+   \   00000846   0x000D             MOVS     R5,R1
+   \   00000848   0xF8DF 0x0B98      LDR.W    R0,??Quadrotor_pid_21+0x1C
+   \   0000084C   0x6800             LDR      R0,[R0, #+0]
+   \   0000084E   0x.... 0x....      BL       __aeabi_f2d
+   \   00000852   0xF8DF 0x2AC8      LDR.W    R2,??Quadrotor_pid_14+0x8  ;; 0x9999999a
+   \   00000856   0xF8DF 0x3AC8      LDR.W    R3,??Quadrotor_pid_14+0xC  ;; 0x3fc99999
+   \   0000085A   0x.... 0x....      BL       __aeabi_dmul
+   \   0000085E   0x2200             MOVS     R2,#+0
+   \   00000860   0xF8DF 0x3B94      LDR.W    R3,??Quadrotor_pid_21+0x30  ;; 0x4092c000
+   \   00000864   0x.... 0x....      BL       __aeabi_dmul
+   \   00000868   0x0002             MOVS     R2,R0
+   \   0000086A   0x000B             MOVS     R3,R1
+   \   0000086C   0x0020             MOVS     R0,R4
+   \   0000086E   0x0029             MOVS     R1,R5
+   \   00000870   0x.... 0x....      BL       __aeabi_dsub
+   \   00000874   0x0004             MOVS     R4,R0
+   \   00000876   0x000D             MOVS     R5,R1
+   \   00000878   0xF8DF 0x0B68      LDR.W    R0,??Quadrotor_pid_21+0x1C
+   \   0000087C   0x6800             LDR      R0,[R0, #+0]
+   \   0000087E   0xF8DF 0x1B70      LDR.W    R1,??Quadrotor_pid_21+0x28
+   \   00000882   0x6809             LDR      R1,[R1, #+0]
+   \   00000884   0x.... 0x....      BL       __aeabi_fsub
+   \   00000888   0x.... 0x....      BL       __aeabi_f2d
+   \   0000088C   0xF8DF 0x2B6C      LDR.W    R2,??Quadrotor_pid_21+0x34  ;; 0xeb851eb8
+   \   00000890   0xF8DF 0x3B6C      LDR.W    R3,??Quadrotor_pid_21+0x38  ;; 0x3fbeb851
+   \   00000894   0x.... 0x....      BL       __aeabi_dmul
+   \   00000898   0x2200             MOVS     R2,#+0
+   \   0000089A   0xF8DF 0x3B5C      LDR.W    R3,??Quadrotor_pid_21+0x30  ;; 0x4092c000
+   \   0000089E   0x.... 0x....      BL       __aeabi_dmul
+   \   000008A2   0x0002             MOVS     R2,R0
+   \   000008A4   0x000B             MOVS     R3,R1
+   \   000008A6   0x0020             MOVS     R0,R4
+   \   000008A8   0x0029             MOVS     R1,R5
+   \   000008AA   0x.... 0x....      BL       __aeabi_dsub
+   \   000008AE   0x.... 0x....      BL       __aeabi_d2iz
+   \   000008B2   0xF8DF 0x1B20      LDR.W    R1,??Quadrotor_pid_21+0xC
+   \   000008B6   0x6008             STR      R0,[R1, #+0]
+    375                     PWM_Y=(int)(PWM_Y+(0.20*err_angY)*1200 + 0.12*(err_angY - pre_err_angY)*1200);//850___1800(850为垂直向下)
+   \   000008B8   0xF8DF 0x0B14      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   000008BC   0x6800             LDR      R0,[R0, #+0]
+   \   000008BE   0x.... 0x....      BL       __aeabi_i2d
+   \   000008C2   0x0004             MOVS     R4,R0
+   \   000008C4   0x000D             MOVS     R5,R1
+   \   000008C6   0xF8DF 0x0B24      LDR.W    R0,??Quadrotor_pid_21+0x24
+   \   000008CA   0x6800             LDR      R0,[R0, #+0]
+   \   000008CC   0x.... 0x....      BL       __aeabi_f2d
+   \   000008D0   0xF8DF 0x2A48      LDR.W    R2,??Quadrotor_pid_14+0x8  ;; 0x9999999a
+   \   000008D4   0xF8DF 0x3A48      LDR.W    R3,??Quadrotor_pid_14+0xC  ;; 0x3fc99999
+   \   000008D8   0x.... 0x....      BL       __aeabi_dmul
+   \   000008DC   0x2200             MOVS     R2,#+0
+   \   000008DE   0xF8DF 0x3B18      LDR.W    R3,??Quadrotor_pid_21+0x30  ;; 0x4092c000
+   \   000008E2   0x.... 0x....      BL       __aeabi_dmul
+   \   000008E6   0x0022             MOVS     R2,R4
+   \   000008E8   0x002B             MOVS     R3,R5
+   \   000008EA   0x.... 0x....      BL       __aeabi_dadd
+   \   000008EE   0x0004             MOVS     R4,R0
+   \   000008F0   0x000D             MOVS     R5,R1
+   \   000008F2   0xF8DF 0x0AF8      LDR.W    R0,??Quadrotor_pid_21+0x24
+   \   000008F6   0x6800             LDR      R0,[R0, #+0]
+   \   000008F8   0xF8DF 0x1AF8      LDR.W    R1,??Quadrotor_pid_21+0x2C
+   \   000008FC   0x6809             LDR      R1,[R1, #+0]
+   \   000008FE   0x.... 0x....      BL       __aeabi_fsub
+   \   00000902   0x.... 0x....      BL       __aeabi_f2d
+   \   00000906   0xF8DF 0x2AF4      LDR.W    R2,??Quadrotor_pid_21+0x34  ;; 0xeb851eb8
+   \   0000090A   0xF8DF 0x3AF4      LDR.W    R3,??Quadrotor_pid_21+0x38  ;; 0x3fbeb851
+   \   0000090E   0x.... 0x....      BL       __aeabi_dmul
+   \   00000912   0x2200             MOVS     R2,#+0
+   \   00000914   0xF8DF 0x3AE0      LDR.W    R3,??Quadrotor_pid_21+0x30  ;; 0x4092c000
+   \   00000918   0x.... 0x....      BL       __aeabi_dmul
+   \   0000091C   0x0022             MOVS     R2,R4
+   \   0000091E   0x002B             MOVS     R3,R5
+   \   00000920   0x.... 0x....      BL       __aeabi_dadd
+   \   00000924   0x.... 0x....      BL       __aeabi_d2iz
+   \   00000928   0xF8DF 0x1AA4      LDR.W    R1,??Quadrotor_pid_21+0x8
+   \   0000092C   0x6008             STR      R0,[R1, #+0]
+   \   0000092E   0xE007             B.N      ??Quadrotor_pid_32
+    376                    }
+    377                    else//未接受到数据时则认为误差角度为0
+    378                    {
+    379                       err_angX = 0;
+   \                     ??Quadrotor_pid_31:
+   \   00000930   0xF8DF 0x0AB0      LDR.W    R0,??Quadrotor_pid_21+0x1C
+   \   00000934   0x2100             MOVS     R1,#+0
+   \   00000936   0x6001             STR      R1,[R0, #+0]
+    380                       err_angY = 0;
+   \   00000938   0xF8DF 0x0AB0      LDR.W    R0,??Quadrotor_pid_21+0x24
+   \   0000093C   0x2100             MOVS     R1,#+0
+   \   0000093E   0x6001             STR      R1,[R0, #+0]
+    381                    }
+    382              
+    383                  
+    384                   //PWM_X=(int)(PWM_X-(0.85*err_angX)*1200) - 0.7*(err_angX - pre_err_angX)*1200);//600--2300(1370y轴负方向)
+    385                   //PWM_Y=(int)(PWM_Y+(0.85*err_angY)*1200) + 0.7*(err_angY - pre_err_angY)*1200);//850___1800(850为垂直向下)
+    386                   if(camflag==true)
+   \                     ??Quadrotor_pid_32:
+   \   00000940   0xF8DF 0x0AC0      LDR.W    R0,??Quadrotor_pid_21+0x3C
+   \   00000944   0x7800             LDRB     R0,[R0, #+0]
+   \   00000946   0x2800             CMP      R0,#+0
+   \   00000948   0xD009             BEQ.N    ??Quadrotor_pid_30
+    387                   {
+    388                      PWM_X=1350;
+   \   0000094A   0xF8DF 0x0A88      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   0000094E   0xF240 0x5146      MOVW     R1,#+1350
+   \   00000952   0x6001             STR      R1,[R0, #+0]
+    389                      PWM_Y=850;
+   \   00000954   0xF8DF 0x0A78      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   00000958   0xF240 0x3152      MOVW     R1,#+850
+   \   0000095C   0x6001             STR      R1,[R0, #+0]
+    390                   }
+    391          
+    392                 }
+    393                 
+    394                    
+    395                  //限制舵机旋转范围
+    396                  if(PWM_Y<850) PWM_Y=850;
+   \                     ??Quadrotor_pid_30:
+   \   0000095E   0xF8DF 0x0A70      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   00000962   0x6800             LDR      R0,[R0, #+0]
+   \   00000964   0xF240 0x3152      MOVW     R1,#+850
+   \   00000968   0x4288             CMP      R0,R1
+   \   0000096A   0xDA04             BGE.N    ??Quadrotor_pid_33
+   \   0000096C   0xF8DF 0x0A60      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   00000970   0xF240 0x3152      MOVW     R1,#+850
+   \   00000974   0x6001             STR      R1,[R0, #+0]
+    397                  if(PWM_Y>1800) PWM_Y=1800;
+   \                     ??Quadrotor_pid_33:
+   \   00000976   0xF8DF 0x0A58      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   0000097A   0x6800             LDR      R0,[R0, #+0]
+   \   0000097C   0xF5B0 0x6FE1      CMP      R0,#+1800
+   \   00000980   0xDD04             BLE.N    ??Quadrotor_pid_34
+   \   00000982   0xF8DF 0x0A4C      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   00000986   0xF44F 0x61E1      MOV      R1,#+1800
+   \   0000098A   0x6001             STR      R1,[R0, #+0]
+    398                  if(PWM_X<600) PWM_X=600;
+   \                     ??Quadrotor_pid_34:
+   \   0000098C   0xF8DF 0x0A44      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   00000990   0x6800             LDR      R0,[R0, #+0]
+   \   00000992   0xF5B0 0x7F16      CMP      R0,#+600
+   \   00000996   0xDA04             BGE.N    ??Quadrotor_pid_35
+   \   00000998   0xF8DF 0x0A38      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   0000099C   0xF44F 0x7116      MOV      R1,#+600
+   \   000009A0   0x6001             STR      R1,[R0, #+0]
+    399                  if(PWM_X>2300) PWM_X=2300;
+   \                     ??Quadrotor_pid_35:
+   \   000009A2   0xF8DF 0x0A30      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   000009A6   0x6800             LDR      R0,[R0, #+0]
+   \   000009A8   0xF640 0x01FD      MOVW     R1,#+2301
+   \   000009AC   0x4288             CMP      R0,R1
+   \   000009AE   0xDB04             BLT.N    ??Quadrotor_pid_36
+   \   000009B0   0xF8DF 0x0A20      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   000009B4   0xF640 0x01FC      MOVW     R1,#+2300
+   \   000009B8   0x6001             STR      R1,[R0, #+0]
+    400                
+    401                  ftm0_pwm_change_duty(0,PWM_Y);//控制舵机上下
+   \                     ??Quadrotor_pid_36:
+   \   000009BA   0xF8DF 0x0A14      LDR.W    R0,??Quadrotor_pid_21+0x8
+   \   000009BE   0x6801             LDR      R1,[R0, #+0]
+   \   000009C0   0x2000             MOVS     R0,#+0
+   \   000009C2   0x.... 0x....      BL       ftm0_pwm_change_duty
+    402                  ftm0_pwm_change_duty(5,PWM_X);//控制舵机左右
+   \   000009C6   0xF8DF 0x0A0C      LDR.W    R0,??Quadrotor_pid_21+0xC
+   \   000009CA   0x6801             LDR      R1,[R0, #+0]
+   \   000009CC   0x2005             MOVS     R0,#+5
+   \   000009CE   0x.... 0x....      BL       ftm0_pwm_change_duty
+    403          
+    404                  
+    405                  //用完的偏移值清零
+    406                  re_Y=0;
+   \   000009D2   0xF8DF 0x0A08      LDR.W    R0,??Quadrotor_pid_21+0x14
+   \   000009D6   0x2100             MOVS     R1,#+0
+   \   000009D8   0x6001             STR      R1,[R0, #+0]
+    407                  re_X=0;
+   \   000009DA   0xF8DF 0x09FC      LDR.W    R0,??Quadrotor_pid_21+0x10
+   \   000009DE   0x2100             MOVS     R1,#+0
+   \   000009E0   0x6001             STR      R1,[R0, #+0]
+    408                  //=======================================      
+    409                  
+    410                  
+    411                  if(startMotion == true && signal_target==true && Landing == false)
+   \   000009E2   0xF8DF 0x0A24      LDR.W    R0,??Quadrotor_pid_21+0x40
+   \   000009E6   0x7800             LDRB     R0,[R0, #+0]
+   \   000009E8   0xF8DF 0x19DC      LDR.W    R1,??Quadrotor_pid_21
+   \   000009EC   0x7809             LDRB     R1,[R1, #+0]
+   \   000009EE   0x4008             ANDS     R0,R1,R0
+   \   000009F0   0x496C             LDR.N    R1,??Quadrotor_pid_2
+   \   000009F2   0x7809             LDRB     R1,[R1, #+0]
+   \   000009F4   0xF091 0x0101      EORS     R1,R1,#0x1
+   \   000009F8   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   000009FA   0x4208             TST      R0,R1
+   \   000009FC   0xF000 0x8126      BEQ.W    ??Quadrotor_pid_37
+    412                  {
+    413          
+    414                      
+    415                    des_PointX =0; //PointX;
+   \   00000A00   0xF8DF 0x0A08      LDR.W    R0,??Quadrotor_pid_21+0x44
+   \   00000A04   0x2100             MOVS     R1,#+0
+   \   00000A06   0x6001             STR      R1,[R0, #+0]
+    416                    des_PointY =0; //PointY;
+   \   00000A08   0xF8DF 0x0A04      LDR.W    R0,??Quadrotor_pid_21+0x48
+   \   00000A0C   0x2100             MOVS     R1,#+0
+   \   00000A0E   0x6001             STR      R1,[R0, #+0]
+    417                      
+    418                    errX = PointX-des_PointX;
+   \   00000A10   0x9812             LDR      R0,[SP, #+72]
+   \   00000A12   0xF8DF 0x19F8      LDR.W    R1,??Quadrotor_pid_21+0x44
+   \   00000A16   0x6809             LDR      R1,[R1, #+0]
+   \   00000A18   0x.... 0x....      BL       __aeabi_fsub
+   \   00000A1C   0xF8DF 0x19F4      LDR.W    R1,??Quadrotor_pid_21+0x4C
+   \   00000A20   0x6008             STR      R0,[R1, #+0]
+    419                    errY = PointY-des_PointY;
+   \   00000A22   0x9813             LDR      R0,[SP, #+76]
+   \   00000A24   0xF8DF 0x19E8      LDR.W    R1,??Quadrotor_pid_21+0x48
+   \   00000A28   0x6809             LDR      R1,[R1, #+0]
+   \   00000A2A   0x.... 0x....      BL       __aeabi_fsub
+   \   00000A2E   0xF8DF 0x19E8      LDR.W    R1,??Quadrotor_pid_21+0x50
+   \   00000A32   0x6008             STR      R0,[R1, #+0]
+    420                    
+    421           
+    422                      //控制跟随小车
+    423                      //设定飞行器跟随在识别目标x轴后方2米的位置
+    424          //            des_PointX = 200-PointX;
+    425          //            des_PointY = 0-PointY;
+    426                      theta = atan2(errX , -errY);
+   \   00000A34   0xF8DF 0x09E0      LDR.W    R0,??Quadrotor_pid_21+0x50
+   \   00000A38   0x6800             LDR      R0,[R0, #+0]
+   \   00000A3A   0xF090 0x4000      EORS     R0,R0,#0x80000000
+   \   00000A3E   0x.... 0x....      BL       __aeabi_f2d
+   \   00000A42   0x0002             MOVS     R2,R0
+   \   00000A44   0x000B             MOVS     R3,R1
+   \   00000A46   0x0014             MOVS     R4,R2
+   \   00000A48   0x001D             MOVS     R5,R3
+   \   00000A4A   0xF8DF 0x09C8      LDR.W    R0,??Quadrotor_pid_21+0x4C
+   \   00000A4E   0x6800             LDR      R0,[R0, #+0]
+   \   00000A50   0x.... 0x....      BL       __aeabi_f2d
+   \   00000A54   0x0022             MOVS     R2,R4
+   \   00000A56   0x002B             MOVS     R3,R5
+   \   00000A58   0x.... 0x....      BL       atan2
+   \   00000A5C   0x.... 0x....      BL       __aeabi_d2f
+   \   00000A60   0xF8DF 0x19B8      LDR.W    R1,??Quadrotor_pid_21+0x54
+   \   00000A64   0x6008             STR      R0,[R1, #+0]
+    427                      
+    428                      float kk=0,RR=0;
+   \   00000A66   0x2600             MOVS     R6,#+0
+   \   00000A68   0x2700             MOVS     R7,#+0
+    429                      RR=sqrt(errX*errX+errY*errY);
+   \   00000A6A   0xF8DF 0x09A8      LDR.W    R0,??Quadrotor_pid_21+0x4C
+   \   00000A6E   0x6801             LDR      R1,[R0, #+0]
+   \   00000A70   0xF8DF 0x09A0      LDR.W    R0,??Quadrotor_pid_21+0x4C
+   \   00000A74   0x6800             LDR      R0,[R0, #+0]
+   \   00000A76   0x.... 0x....      BL       __aeabi_fmul
+   \   00000A7A   0x0004             MOVS     R4,R0
+   \   00000A7C   0xF8DF 0x0998      LDR.W    R0,??Quadrotor_pid_21+0x50
+   \   00000A80   0x6801             LDR      R1,[R0, #+0]
+   \   00000A82   0xF8DF 0x0994      LDR.W    R0,??Quadrotor_pid_21+0x50
+   \   00000A86   0x6800             LDR      R0,[R0, #+0]
+   \   00000A88   0x.... 0x....      BL       __aeabi_fmul
+   \   00000A8C   0x0021             MOVS     R1,R4
+   \   00000A8E   0x.... 0x....      BL       __aeabi_fadd
+   \   00000A92   0x.... 0x....      BL       __aeabi_f2d
+   \   00000A96   0x.... 0x....      BL       sqrt
+   \   00000A9A   0x.... 0x....      BL       __aeabi_d2f
+   \   00000A9E   0x0007             MOVS     R7,R0
+    430                      kk=0.1*log(RR/10.0)/log(2.0);
+   \   00000AA0   0x0038             MOVS     R0,R7
+   \   00000AA2   0x.... 0x....      BL       __aeabi_f2d
+   \   00000AA6   0x2200             MOVS     R2,#+0
+   \   00000AA8   0xF8DF 0x3974      LDR.W    R3,??Quadrotor_pid_21+0x58  ;; 0x40240000
+   \   00000AAC   0x.... 0x....      BL       __aeabi_ddiv
+   \   00000AB0   0x.... 0x....      BL       log
+   \   00000AB4   0xF8DF 0x2864      LDR.W    R2,??Quadrotor_pid_14+0x8  ;; 0x9999999a
+   \   00000AB8   0xF8DF 0x3968      LDR.W    R3,??Quadrotor_pid_21+0x5C  ;; 0x3fb99999
+   \   00000ABC   0x.... 0x....      BL       __aeabi_dmul
+   \   00000AC0   0x0004             MOVS     R4,R0
+   \   00000AC2   0x000D             MOVS     R5,R1
+   \   00000AC4   0x2000             MOVS     R0,#+0
+   \   00000AC6   0xF05F 0x4180      MOVS     R1,#+1073741824
+   \   00000ACA   0x.... 0x....      BL       log
+   \   00000ACE   0x0002             MOVS     R2,R0
+   \   00000AD0   0x000B             MOVS     R3,R1
+   \   00000AD2   0x0020             MOVS     R0,R4
+   \   00000AD4   0x0029             MOVS     R1,R5
+   \   00000AD6   0x.... 0x....      BL       __aeabi_ddiv
+   \   00000ADA   0x.... 0x....      BL       __aeabi_d2f
+   \   00000ADE   0x0006             MOVS     R6,R0
+    431                      if(RR<25)
+   \   00000AE0   0x0038             MOVS     R0,R7
+   \   00000AE2   0xF8DF 0x1944      LDR.W    R1,??Quadrotor_pid_21+0x60  ;; 0x41c80000
+   \   00000AE6   0x.... 0x....      BL       __aeabi_cfcmple
+   \   00000AEA   0xD203             BCS.N    ??Quadrotor_pid_38
+    432                      {
+    433                        camflag=true;
+   \   00000AEC   0xF8DF 0x0914      LDR.W    R0,??Quadrotor_pid_21+0x3C
+   \   00000AF0   0x2101             MOVS     R1,#+1
+   \   00000AF2   0x7001             STRB     R1,[R0, #+0]
+    434                      }
+    435                      if(RR>25)
+   \                     ??Quadrotor_pid_38:
+   \   00000AF4   0x0038             MOVS     R0,R7
+   \   00000AF6   0xF8DF 0x1934      LDR.W    R1,??Quadrotor_pid_21+0x64  ;; 0x41c80001
+   \   00000AFA   0x.... 0x....      BL       __aeabi_cfrcmple
+   \   00000AFE   0xF200 0x8099      BHI.W    ??Quadrotor_pid_39
+    436                      { 
+    437                          des_x -=kk*(Velocity / OptSamTime) * sin(theta);
+   \   00000B02   0xF8DF 0x092C      LDR.W    R0,??Quadrotor_pid_21+0x68
+   \   00000B06   0x6800             LDR      R0,[R0, #+0]
+   \   00000B08   0x.... 0x....      BL       __aeabi_f2d
+   \   00000B0C   0x4680             MOV      R8,R0
+   \   00000B0E   0x4689             MOV      R9,R1
+   \   00000B10   0xF05F 0x4080      MOVS     R0,#+1073741824
+   \   00000B14   0x0031             MOVS     R1,R6
+   \   00000B16   0x.... 0x....      BL       __aeabi_fmul
+   \   00000B1A   0x.... 0x....      BL       __aeabi_f2d
+   \   00000B1E   0x0004             MOVS     R4,R0
+   \   00000B20   0x000D             MOVS     R5,R1
+   \   00000B22   0xF8DF 0x08F8      LDR.W    R0,??Quadrotor_pid_21+0x54
+   \   00000B26   0x6800             LDR      R0,[R0, #+0]
+   \   00000B28   0x.... 0x....      BL       __aeabi_f2d
+   \   00000B2C   0x.... 0x....      BL       sin
+   \   00000B30   0x0022             MOVS     R2,R4
+   \   00000B32   0x002B             MOVS     R3,R5
+   \   00000B34   0x.... 0x....      BL       __aeabi_dmul
+   \   00000B38   0x0002             MOVS     R2,R0
+   \   00000B3A   0x000B             MOVS     R3,R1
+   \   00000B3C   0x4640             MOV      R0,R8
+   \   00000B3E   0x4649             MOV      R1,R9
+   \   00000B40   0x.... 0x....      BL       __aeabi_dsub
+   \   00000B44   0x.... 0x....      BL       __aeabi_d2f
+   \   00000B48   0xF8DF 0x18E4      LDR.W    R1,??Quadrotor_pid_21+0x68
+   \   00000B4C   0x6008             STR      R0,[R1, #+0]
+    438                          des_y -=kk*(Velocity / OptSamTime) * cos(theta);
+   \   00000B4E   0xF8DF 0x08E4      LDR.W    R0,??Quadrotor_pid_21+0x6C
+   \   00000B52   0x6800             LDR      R0,[R0, #+0]
+   \   00000B54   0x.... 0x....      BL       __aeabi_f2d
+   \   00000B58   0x4680             MOV      R8,R0
+   \   00000B5A   0x4689             MOV      R9,R1
+   \   00000B5C   0xF05F 0x4080      MOVS     R0,#+1073741824
+   \   00000B60   0x0031             MOVS     R1,R6
+   \   00000B62   0x.... 0x....      BL       __aeabi_fmul
+   \   00000B66   0x.... 0x....      BL       __aeabi_f2d
+   \   00000B6A   0x0004             MOVS     R4,R0
+   \   00000B6C   0x000D             MOVS     R5,R1
+   \   00000B6E   0xF8DF 0x08AC      LDR.W    R0,??Quadrotor_pid_21+0x54
+   \   00000B72   0x6800             LDR      R0,[R0, #+0]
+   \   00000B74   0x.... 0x....      BL       __aeabi_f2d
+   \   00000B78   0x.... 0x....      BL       cos
+   \   00000B7C   0x0022             MOVS     R2,R4
+   \   00000B7E   0x002B             MOVS     R3,R5
+   \   00000B80   0x.... 0x....      BL       __aeabi_dmul
+   \   00000B84   0x0002             MOVS     R2,R0
+   \   00000B86   0x000B             MOVS     R3,R1
+   \   00000B88   0x4640             MOV      R0,R8
+   \   00000B8A   0x4649             MOV      R1,R9
+   \   00000B8C   0x.... 0x....      BL       __aeabi_dsub
+   \   00000B90   0x.... 0x....      BL       __aeabi_d2f
+   \   00000B94   0xF8DF 0x189C      LDR.W    R1,??Quadrotor_pid_21+0x6C
+   \   00000B98   0x6008             STR      R0,[R1, #+0]
+    439          
+    440                          _flag_=true;
+   \   00000B9A   0xF8DF 0x089C      LDR.W    R0,??Quadrotor_pid_21+0x70
+   \   00000B9E   0x2101             MOVS     R1,#+1
+   \   00000BA0   0x7001             STRB     R1,[R0, #+0]
+   \   00000BA2   0xE053             B.N      ??Quadrotor_pid_37
+   \                     ??Quadrotor_pid_2:
+   \   00000BA4   0x........         DC32     Landing
+   \   00000BA8   0x........         DC32     Backup_landing
+   \   00000BAC   0x........         DC32     lastHeight
+   \   00000BB0   0x42480001         DC32     0x42480001
+   \   00000BB4   0x........         DC32     ??high_f
+   \   00000BB8   0x........         DC32     ??K
+   \   00000BBC   0x........         DC32     ??des_high
+   \   00000BC0   0x42A00000         DC32     0x42a00000
+   \   00000BC4   0x428C0001         DC32     0x428c0001
+   \   00000BC8   0x42DC0000         DC32     0x42dc0000
+   \   00000BCC   0x........         DC32     ??k_high
+   \   00000BD0   0x........         DC32     ??des_pitch
+   \   00000BD4   0x........         DC32     ??des_roll
+   \   00000BD8   0x........         DC32     ??des_yaw
+   \   00000BDC   0x........         DC32     BaseHeight
+   \   00000BE0   0x........         DC32     ??sum_err_pitch
+   \   00000BE4   0x........         DC32     ??sum_err_roll
+   \   00000BE8   0x........         DC32     ??sum_err_yaw
+   \   00000BEC   0x........         DC32     Integral_high
+   \   00000BF0   0x........         DC32     ??sum_err_high
+   \   00000BF4   0x........         DC32     ??pre_err_pitch
+   \   00000BF8   0x........         DC32     ??pre_err_roll
+   \   00000BFC   0x........         DC32     ??pre_err_yaw
+   \   00000C00   0x........         DC32     ??pre_err_high
+   \   00000C04   0x........         DC32     Kp1
+   \   00000C08   0x........         DC32     Ki1
+   \   00000C0C   0x........         DC32     Kd1
+   \   00000C10   0x........         DC32     Kp2
+   \   00000C14   0x........         DC32     Ki2
+   \   00000C18   0x........         DC32     Kd2
+   \   00000C1C   0x........         DC32     Kp3
+   \   00000C20   0x........         DC32     Ki3
+   \   00000C24   0x........         DC32     Kd3
+   \   00000C28   0x........         DC32     Kp4
+   \   00000C2C   0x........         DC32     Ki4
+   \   00000C30   0x........         DC32     Kd4
+    441          //               
+    442                     }
+    443                      else
+    444                      {
+    445          //              if(RR>0)
+    446          //              {
+    447          //                float k_follow=0.1,kd_follow=2.0,ux=0,uy=0,dot_errX=0,dot_errY,temperrX=0,temperrY=0;
+    448          //
+    449          //                static float pre_errX=0,pre_errY=0,predot_errX,predot_errY;
+    450          //                if(_flag_==true)
+    451          //                {pre_errX=errX;pre_errY=errY;_flag_=false;}
+    452          //                temperrX=0.8*errX+0.20*pre_errX;
+    453          //                temperrY=0.8*errY+0.20*pre_errY;
+    454          //                dot_errX=temperrX-pre_errX;
+    455          //                dot_errY=temperrY-pre_errY;
+    456          //                
+    457          //                predot_errX=dot_errX;
+    458          //                predot_errY=dot_errY;
+    459          //                ux=k_follow*temperrX+kd_follow*dot_errX;
+    460          //                uy=k_follow*temperrY+kd_follow*dot_errY;
+    461          //                pre_errX=temperrX;
+    462          //                pre_errY=temperrY;
+    463          //                des_x -=ux*(Velocity / OptSamTime) ;
+    464          //                des_y -=uy*(Velocity / OptSamTime) ;
+    465          //
+    466          //              }
+    467          //              else
+    468          //              {
+    469                         des_x -=0;//.1*(Velocity / OptSamTime) ;
+   \                     ??Quadrotor_pid_39:
+   \   00000C34   0xF8DF 0x07F8      LDR.W    R0,??Quadrotor_pid_21+0x68
+   \   00000C38   0xF8DF 0x17F4      LDR.W    R1,??Quadrotor_pid_21+0x68
+   \   00000C3C   0x6809             LDR      R1,[R1, #+0]
+   \   00000C3E   0x6001             STR      R1,[R0, #+0]
+    470                         des_y -=0;//.1*(Velocity / OptSamTime) ;
+   \   00000C40   0xF8DF 0x07F0      LDR.W    R0,??Quadrotor_pid_21+0x6C
+   \   00000C44   0xF8DF 0x17EC      LDR.W    R1,??Quadrotor_pid_21+0x6C
+   \   00000C48   0x6809             LDR      R1,[R1, #+0]
+   \   00000C4A   0x6001             STR      R1,[R0, #+0]
+    471          //
+    472          //               _flag_=true;
+    473          //              }
+    474          
+    475                      }
+    476                     
+    477                      
+    478                   }
+    479          
+    480          //==============================================================================
+    481              
+    482                  
+    483                  
+    484                  //==================================
+    485                  xpos = 0.2 * SumDeltX + 0.8 * preposx;
+   \                     ??Quadrotor_pid_37:
+   \   00000C4C   0xF8DF 0x07EC      LDR.W    R0,??Quadrotor_pid_21+0x74
+   \   00000C50   0xE9D0 0x2300      LDRD     R2,R3,[R0, #+0]
+   \   00000C54   0xF8DF 0x06C4      LDR.W    R0,??Quadrotor_pid_14+0x8  ;; 0x9999999a
+   \   00000C58   0xF8DF 0x16C4      LDR.W    R1,??Quadrotor_pid_14+0xC  ;; 0x3fc99999
+   \   00000C5C   0x.... 0x....      BL       __aeabi_dmul
+   \   00000C60   0x0004             MOVS     R4,R0
+   \   00000C62   0x000D             MOVS     R5,R1
+   \   00000C64   0xF8DF 0x07D8      LDR.W    R0,??Quadrotor_pid_21+0x78
+   \   00000C68   0x6800             LDR      R0,[R0, #+0]
+   \   00000C6A   0x.... 0x....      BL       __aeabi_f2d
+   \   00000C6E   0xF8DF 0x26AC      LDR.W    R2,??Quadrotor_pid_14+0x8  ;; 0x9999999a
+   \   00000C72   0xF8DF 0x37D0      LDR.W    R3,??Quadrotor_pid_21+0x7C  ;; 0x3fe99999
+   \   00000C76   0x.... 0x....      BL       __aeabi_dmul
+   \   00000C7A   0x0022             MOVS     R2,R4
+   \   00000C7C   0x002B             MOVS     R3,R5
+   \   00000C7E   0x.... 0x....      BL       __aeabi_dadd
+   \   00000C82   0x.... 0x....      BL       __aeabi_d2f
+   \   00000C86   0x0006             MOVS     R6,R0
+    486                  ypos = 0.2 * SumDeltY + 0.8 * preposy;
+   \   00000C88   0xF8DF 0x07BC      LDR.W    R0,??Quadrotor_pid_21+0x80
+   \   00000C8C   0xE9D0 0x2300      LDRD     R2,R3,[R0, #+0]
+   \   00000C90   0xF8DF 0x0688      LDR.W    R0,??Quadrotor_pid_14+0x8  ;; 0x9999999a
+   \   00000C94   0xF8DF 0x1688      LDR.W    R1,??Quadrotor_pid_14+0xC  ;; 0x3fc99999
+   \   00000C98   0x.... 0x....      BL       __aeabi_dmul
+   \   00000C9C   0x0004             MOVS     R4,R0
+   \   00000C9E   0x000D             MOVS     R5,R1
+   \   00000CA0   0xF8DF 0x07A8      LDR.W    R0,??Quadrotor_pid_21+0x84
+   \   00000CA4   0x6800             LDR      R0,[R0, #+0]
+   \   00000CA6   0x.... 0x....      BL       __aeabi_f2d
+   \   00000CAA   0xF8DF 0x2670      LDR.W    R2,??Quadrotor_pid_14+0x8  ;; 0x9999999a
+   \   00000CAE   0xF8DF 0x3794      LDR.W    R3,??Quadrotor_pid_21+0x7C  ;; 0x3fe99999
+   \   00000CB2   0x.... 0x....      BL       __aeabi_dmul
+   \   00000CB6   0x0022             MOVS     R2,R4
+   \   00000CB8   0x002B             MOVS     R3,R5
+   \   00000CBA   0x.... 0x....      BL       __aeabi_dadd
+   \   00000CBE   0x.... 0x....      BL       __aeabi_d2f
+   \   00000CC2   0x0007             MOVS     R7,R0
+    487                 
+    488                  Axis_x = xpos - des_x;
+   \   00000CC4   0x0030             MOVS     R0,R6
+   \   00000CC6   0xF8DF 0x1768      LDR.W    R1,??Quadrotor_pid_21+0x68
+   \   00000CCA   0x6809             LDR      R1,[R1, #+0]
+   \   00000CCC   0x.... 0x....      BL       __aeabi_fsub
+   \   00000CD0   0x.... 0x....      BL       __aeabi_f2d
+   \   00000CD4   0xF8DF 0x2778      LDR.W    R2,??Quadrotor_pid_21+0x88
+   \   00000CD8   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    489                  Axis_y = ypos - des_y;
+   \   00000CDC   0x0038             MOVS     R0,R7
+   \   00000CDE   0xF8DF 0x1754      LDR.W    R1,??Quadrotor_pid_21+0x6C
+   \   00000CE2   0x6809             LDR      R1,[R1, #+0]
+   \   00000CE4   0x.... 0x....      BL       __aeabi_fsub
+   \   00000CE8   0x.... 0x....      BL       __aeabi_f2d
+   \   00000CEC   0xF8DF 0x2764      LDR.W    R2,??Quadrotor_pid_21+0x8C
+   \   00000CF0   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    490          
+    491                  dot_targetx = Axis_x -  target_x;
+   \   00000CF4   0xF8DF 0x0760      LDR.W    R0,??Quadrotor_pid_21+0x90
+   \   00000CF8   0x6800             LDR      R0,[R0, #+0]
+   \   00000CFA   0x.... 0x....      BL       __aeabi_f2d
+   \   00000CFE   0x0002             MOVS     R2,R0
+   \   00000D00   0x000B             MOVS     R3,R1
+   \   00000D02   0xF8DF 0x474C      LDR.W    R4,??Quadrotor_pid_21+0x88
+   \   00000D06   0xE9D4 0x0100      LDRD     R0,R1,[R4, #+0]
+   \   00000D0A   0x.... 0x....      BL       __aeabi_dsub
+   \   00000D0E   0x.... 0x....      BL       __aeabi_d2f
+   \   00000D12   0xF8DF 0x1748      LDR.W    R1,??Quadrotor_pid_21+0x94
+   \   00000D16   0x6008             STR      R0,[R1, #+0]
+    492                  dot_targety = Axis_y - target_y ;
+   \   00000D18   0xF8DF 0x0744      LDR.W    R0,??Quadrotor_pid_21+0x98
+   \   00000D1C   0x6800             LDR      R0,[R0, #+0]
+   \   00000D1E   0x.... 0x....      BL       __aeabi_f2d
+   \   00000D22   0x0002             MOVS     R2,R0
+   \   00000D24   0x000B             MOVS     R3,R1
+   \   00000D26   0xF8DF 0x472C      LDR.W    R4,??Quadrotor_pid_21+0x8C
+   \   00000D2A   0xE9D4 0x0100      LDRD     R0,R1,[R4, #+0]
+   \   00000D2E   0x.... 0x....      BL       __aeabi_dsub
+   \   00000D32   0x.... 0x....      BL       __aeabi_d2f
+   \   00000D36   0xF8DF 0x172C      LDR.W    R1,??Quadrotor_pid_21+0x9C
+   \   00000D3A   0x6008             STR      R0,[R1, #+0]
+    493                  
+    494                  dot_targetx = (dot_targetx + last_dotx) / 2.0;
+   \   00000D3C   0xF8DF 0x071C      LDR.W    R0,??Quadrotor_pid_21+0x94
+   \   00000D40   0x6801             LDR      R1,[R0, #+0]
+   \   00000D42   0xF8DF 0x0724      LDR.W    R0,??Quadrotor_pid_21+0xA0
+   \   00000D46   0x6800             LDR      R0,[R0, #+0]
+   \   00000D48   0x.... 0x....      BL       __aeabi_fadd
+   \   00000D4C   0x.... 0x....      BL       __aeabi_f2d
+   \   00000D50   0x2200             MOVS     R2,#+0
+   \   00000D52   0xF05F 0x4380      MOVS     R3,#+1073741824
+   \   00000D56   0x.... 0x....      BL       __aeabi_ddiv
+   \   00000D5A   0x.... 0x....      BL       __aeabi_d2f
+   \   00000D5E   0xF8DF 0x16FC      LDR.W    R1,??Quadrotor_pid_21+0x94
+   \   00000D62   0x6008             STR      R0,[R1, #+0]
+    495                  dot_targety = (dot_targety + last_doty) / 2.0;
+   \   00000D64   0xF8DF 0x06FC      LDR.W    R0,??Quadrotor_pid_21+0x9C
+   \   00000D68   0x6801             LDR      R1,[R0, #+0]
+   \   00000D6A   0xF8DF 0x0700      LDR.W    R0,??Quadrotor_pid_21+0xA4
+   \   00000D6E   0x6800             LDR      R0,[R0, #+0]
+   \   00000D70   0x.... 0x....      BL       __aeabi_fadd
+   \   00000D74   0x.... 0x....      BL       __aeabi_f2d
+   \   00000D78   0x2200             MOVS     R2,#+0
+   \   00000D7A   0xF05F 0x4380      MOVS     R3,#+1073741824
+   \   00000D7E   0x.... 0x....      BL       __aeabi_ddiv
+   \   00000D82   0x.... 0x....      BL       __aeabi_d2f
+   \   00000D86   0xF8DF 0x16DC      LDR.W    R1,??Quadrotor_pid_21+0x9C
+   \   00000D8A   0x6008             STR      R0,[R1, #+0]
+    496                  
+    497                  err_vx = dot_targetx - last_dotx;
+   \   00000D8C   0xF8DF 0x06CC      LDR.W    R0,??Quadrotor_pid_21+0x94
+   \   00000D90   0x6800             LDR      R0,[R0, #+0]
+   \   00000D92   0xF8DF 0x16D4      LDR.W    R1,??Quadrotor_pid_21+0xA0
+   \   00000D96   0x6809             LDR      R1,[R1, #+0]
+   \   00000D98   0x.... 0x....      BL       __aeabi_fsub
+   \   00000D9C   0x0004             MOVS     R4,R0
+    498                  err_vy = dot_targety - last_doty;
+   \   00000D9E   0xF8DF 0x06C4      LDR.W    R0,??Quadrotor_pid_21+0x9C
+   \   00000DA2   0x6800             LDR      R0,[R0, #+0]
+   \   00000DA4   0xF8DF 0x16C4      LDR.W    R1,??Quadrotor_pid_21+0xA4
+   \   00000DA8   0x6809             LDR      R1,[R1, #+0]
+   \   00000DAA   0x.... 0x....      BL       __aeabi_fsub
+   \   00000DAE   0x0005             MOVS     R5,R0
+    499               
+    500                  preposx = xpos;
+   \   00000DB0   0xF8DF 0x068C      LDR.W    R0,??Quadrotor_pid_21+0x78
+   \   00000DB4   0x6006             STR      R6,[R0, #+0]
+    501                  preposy = ypos;
+   \   00000DB6   0xF8DF 0x0694      LDR.W    R0,??Quadrotor_pid_21+0x84
+   \   00000DBA   0x6007             STR      R7,[R0, #+0]
+    502                  
+    503                  target_x = Axis_x;
+   \   00000DBC   0xF8DF 0x2690      LDR.W    R2,??Quadrotor_pid_21+0x88
+   \   00000DC0   0xE9D2 0x0100      LDRD     R0,R1,[R2, #+0]
+   \   00000DC4   0x.... 0x....      BL       __aeabi_d2f
+   \   00000DC8   0xF8DF 0x168C      LDR.W    R1,??Quadrotor_pid_21+0x90
+   \   00000DCC   0x6008             STR      R0,[R1, #+0]
+    504                  target_y = Axis_y;
+   \   00000DCE   0xF8DF 0x2684      LDR.W    R2,??Quadrotor_pid_21+0x8C
+   \   00000DD2   0xE9D2 0x0100      LDRD     R0,R1,[R2, #+0]
+   \   00000DD6   0x.... 0x....      BL       __aeabi_d2f
+   \   00000DDA   0xF8DF 0x1684      LDR.W    R1,??Quadrotor_pid_21+0x98
+   \   00000DDE   0x6008             STR      R0,[R1, #+0]
+    505                  
+    506                  last_dotx = dot_targetx;
+   \   00000DE0   0xF8DF 0x0684      LDR.W    R0,??Quadrotor_pid_21+0xA0
+   \   00000DE4   0xF8DF 0x1674      LDR.W    R1,??Quadrotor_pid_21+0x94
+   \   00000DE8   0x6809             LDR      R1,[R1, #+0]
+   \   00000DEA   0x6001             STR      R1,[R0, #+0]
+    507                  last_doty = dot_targety;
+   \   00000DEC   0xF8DF 0x067C      LDR.W    R0,??Quadrotor_pid_21+0xA4
+   \   00000DF0   0xF8DF 0x1670      LDR.W    R1,??Quadrotor_pid_21+0x9C
+   \   00000DF4   0x6809             LDR      R1,[R1, #+0]
+   \   00000DF6   0x6001             STR      R1,[R0, #+0]
+    508                  
+    509                  sum_axisx += target_x ;//* k_high;
+   \   00000DF8   0xF8DF 0x065C      LDR.W    R0,??Quadrotor_pid_21+0x90
+   \   00000DFC   0x6800             LDR      R0,[R0, #+0]
+   \   00000DFE   0x.... 0x....      BL       __aeabi_f2d
+   \   00000E02   0xF8DF 0x666C      LDR.W    R6,??Quadrotor_pid_21+0xA8
+   \   00000E06   0xE9D6 0x2300      LDRD     R2,R3,[R6, #+0]
+   \   00000E0A   0x.... 0x....      BL       __aeabi_dadd
+   \   00000E0E   0xF8DF 0x2660      LDR.W    R2,??Quadrotor_pid_21+0xA8
+   \   00000E12   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    510                  sum_axisy += target_y ;//* k_high;
+   \   00000E16   0xF8DF 0x0648      LDR.W    R0,??Quadrotor_pid_21+0x98
+   \   00000E1A   0x6800             LDR      R0,[R0, #+0]
+   \   00000E1C   0x.... 0x....      BL       __aeabi_f2d
+   \   00000E20   0xF8DF 0x6650      LDR.W    R6,??Quadrotor_pid_21+0xAC
+   \   00000E24   0xE9D6 0x2300      LDRD     R2,R3,[R6, #+0]
+   \   00000E28   0x.... 0x....      BL       __aeabi_dadd
+   \   00000E2C   0xF8DF 0x2644      LDR.W    R2,??Quadrotor_pid_21+0xAC
+   \   00000E30   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    511          
+    512                  
+    513                  //=========================================
+    514                  float tempdotErrX = 0,tempdotErrY=0;
+   \   00000E34   0x2700             MOVS     R7,#+0
+   \   00000E36   0x2600             MOVS     R6,#+0
+    515                  static float lastdotErrX=0,lastdotErrY=0;
+    516                 
+    517                  tempdotErrX = errX - lastErrX;
+   \   00000E38   0xF8DF 0x05D8      LDR.W    R0,??Quadrotor_pid_21+0x4C
+   \   00000E3C   0x6800             LDR      R0,[R0, #+0]
+   \   00000E3E   0xF8DF 0x1638      LDR.W    R1,??Quadrotor_pid_21+0xB0
+   \   00000E42   0x6809             LDR      R1,[R1, #+0]
+   \   00000E44   0x.... 0x....      BL       __aeabi_fsub
+   \   00000E48   0x0007             MOVS     R7,R0
+    518                  tempdotErrY = errY - lastErrY;
+   \   00000E4A   0xF8DF 0x05CC      LDR.W    R0,??Quadrotor_pid_21+0x50
+   \   00000E4E   0x6800             LDR      R0,[R0, #+0]
+   \   00000E50   0xF8DF 0x1628      LDR.W    R1,??Quadrotor_pid_21+0xB4
+   \   00000E54   0x6809             LDR      R1,[R1, #+0]
+   \   00000E56   0x.... 0x....      BL       __aeabi_fsub
+   \   00000E5A   0x0006             MOVS     R6,R0
+    519                 
+    520                  dotErrX = 0.3*tempdotErrX + 0.7*lastdotErrX;
+   \   00000E5C   0x0038             MOVS     R0,R7
+   \   00000E5E   0x.... 0x....      BL       __aeabi_f2d
+   \   00000E62   0xF05F 0x3233      MOVS     R2,#+858993459
+   \   00000E66   0xF8DF 0x3618      LDR.W    R3,??Quadrotor_pid_21+0xB8  ;; 0x3fd33333
+   \   00000E6A   0x.... 0x....      BL       __aeabi_dmul
+   \   00000E6E   0x4680             MOV      R8,R0
+   \   00000E70   0x4689             MOV      R9,R1
+   \   00000E72   0xF8DF 0x0610      LDR.W    R0,??Quadrotor_pid_21+0xBC
+   \   00000E76   0x6800             LDR      R0,[R0, #+0]
+   \   00000E78   0x.... 0x....      BL       __aeabi_f2d
+   \   00000E7C   0xF05F 0x3266      MOVS     R2,#+1717986918
+   \   00000E80   0xF8DF 0x3604      LDR.W    R3,??Quadrotor_pid_21+0xC0  ;; 0x3fe66666
+   \   00000E84   0x.... 0x....      BL       __aeabi_dmul
+   \   00000E88   0x4642             MOV      R2,R8
+   \   00000E8A   0x464B             MOV      R3,R9
+   \   00000E8C   0x.... 0x....      BL       __aeabi_dadd
+   \   00000E90   0x.... 0x....      BL       __aeabi_d2f
+   \   00000E94   0x9001             STR      R0,[SP, #+4]
+    521                  dotErrY = 0.3*tempdotErrY + 0.7*lastdotErrY;
+   \   00000E96   0x0030             MOVS     R0,R6
+   \   00000E98   0x.... 0x....      BL       __aeabi_f2d
+   \   00000E9C   0xF05F 0x3233      MOVS     R2,#+858993459
+   \   00000EA0   0xF8DF 0x35DC      LDR.W    R3,??Quadrotor_pid_21+0xB8  ;; 0x3fd33333
+   \   00000EA4   0x.... 0x....      BL       __aeabi_dmul
+   \   00000EA8   0x0006             MOVS     R6,R0
+   \   00000EAA   0x000F             MOVS     R7,R1
+   \   00000EAC   0xF8DF 0x05DC      LDR.W    R0,??Quadrotor_pid_21+0xC4
+   \   00000EB0   0x6800             LDR      R0,[R0, #+0]
+   \   00000EB2   0x.... 0x....      BL       __aeabi_f2d
+   \   00000EB6   0xF05F 0x3266      MOVS     R2,#+1717986918
+   \   00000EBA   0xF8DF 0x35CC      LDR.W    R3,??Quadrotor_pid_21+0xC0  ;; 0x3fe66666
+   \   00000EBE   0x.... 0x....      BL       __aeabi_dmul
+   \   00000EC2   0x0032             MOVS     R2,R6
+   \   00000EC4   0x003B             MOVS     R3,R7
+   \   00000EC6   0x.... 0x....      BL       __aeabi_dadd
+   \   00000ECA   0x.... 0x....      BL       __aeabi_d2f
+   \   00000ECE   0x9000             STR      R0,[SP, #+0]
+    522                  
+    523                  lastdotErrX = dotErrX;
+   \   00000ED0   0xF8DF 0x05B0      LDR.W    R0,??Quadrotor_pid_21+0xBC
+   \   00000ED4   0x9901             LDR      R1,[SP, #+4]
+   \   00000ED6   0x6001             STR      R1,[R0, #+0]
+    524                  lastdotErrY = dotErrY;
+   \   00000ED8   0xF8DF 0x05B0      LDR.W    R0,??Quadrotor_pid_21+0xC4
+   \   00000EDC   0x9900             LDR      R1,[SP, #+0]
+   \   00000EDE   0x6001             STR      R1,[R0, #+0]
+    525                        
+    526                  sumErrX += errX;
+   \   00000EE0   0xF8DF 0x0530      LDR.W    R0,??Quadrotor_pid_21+0x4C
+   \   00000EE4   0x6800             LDR      R0,[R0, #+0]
+   \   00000EE6   0x.... 0x....      BL       __aeabi_f2d
+   \   00000EEA   0xF8DF 0x65A4      LDR.W    R6,??Quadrotor_pid_21+0xC8
+   \   00000EEE   0xE9D6 0x2300      LDRD     R2,R3,[R6, #+0]
+   \   00000EF2   0x.... 0x....      BL       __aeabi_dadd
+   \   00000EF6   0xF8DF 0x2598      LDR.W    R2,??Quadrotor_pid_21+0xC8
+   \   00000EFA   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    527                  sumErrY += errY;
+   \   00000EFE   0xF8DF 0x0518      LDR.W    R0,??Quadrotor_pid_21+0x50
+   \   00000F02   0x6800             LDR      R0,[R0, #+0]
+   \   00000F04   0x.... 0x....      BL       __aeabi_f2d
+   \   00000F08   0xF8DF 0x6588      LDR.W    R6,??Quadrotor_pid_21+0xCC
+   \   00000F0C   0xE9D6 0x2300      LDRD     R2,R3,[R6, #+0]
+   \   00000F10   0x.... 0x....      BL       __aeabi_dadd
+   \   00000F14   0xF8DF 0x257C      LDR.W    R2,??Quadrotor_pid_21+0xCC
+   \   00000F18   0xE9C2 0x0100      STRD     R0,R1,[R2, #+0]
+    528                     
+    529                  lastErrX = errX;
+   \   00000F1C   0xF8DF 0x0558      LDR.W    R0,??Quadrotor_pid_21+0xB0
+   \   00000F20   0xF8DF 0x14F0      LDR.W    R1,??Quadrotor_pid_21+0x4C
+   \   00000F24   0x6809             LDR      R1,[R1, #+0]
+   \   00000F26   0x6001             STR      R1,[R0, #+0]
+    530                  lastErrY = errY;
+   \   00000F28   0xF8DF 0x0550      LDR.W    R0,??Quadrotor_pid_21+0xB4
+   \   00000F2C   0xF8DF 0x14E8      LDR.W    R1,??Quadrotor_pid_21+0x50
+   \   00000F30   0x6809             LDR      R1,[R1, #+0]
+   \   00000F32   0x6001             STR      R1,[R0, #+0]
+    531                  //=========================================
+    532          
+    533                  //  if(sum_axisx > 1500000)sum_axisx = 1500000;
+    534                  //  else if(sum_axisx < -1500000)sum_axisx = -1500000;
+    535                  //  if(sum_axisy > 1500000)sum_axisy = 1500000;
+    536                  //  else if(sum_axisy < -1500000)sum_axisy = -1500000;
+    537                  
+    538          
+    539          
+    540                  
+    541                  W_Axis_1 = target_x     * Kx + sum_axisx * Kix + Kdx * dot_targetx  + err_vx * kvx ;
+   \   00000F34   0xF8DF 0x0520      LDR.W    R0,??Quadrotor_pid_21+0x90
+   \   00000F38   0x6801             LDR      R1,[R0, #+0]
+   \   00000F3A   0xF8DF 0x055C      LDR.W    R0,??Quadrotor_pid_21+0xD0
+   \   00000F3E   0x6800             LDR      R0,[R0, #+0]
+   \   00000F40   0x.... 0x....      BL       __aeabi_fmul
+   \   00000F44   0x.... 0x....      BL       __aeabi_f2d
+   \   00000F48   0x0006             MOVS     R6,R0
+   \   00000F4A   0x000F             MOVS     R7,R1
+   \   00000F4C   0xF8DF 0x054C      LDR.W    R0,??Quadrotor_pid_21+0xD4
+   \   00000F50   0x6800             LDR      R0,[R0, #+0]
+   \   00000F52   0x.... 0x....      BL       __aeabi_f2d
+   \   00000F56   0xF8DF 0xC518      LDR.W    R12,??Quadrotor_pid_21+0xA8
+   \   00000F5A   0xE9DC 0x2300      LDRD     R2,R3,[R12, #+0]
+   \   00000F5E   0x.... 0x....      BL       __aeabi_dmul
+   \   00000F62   0x0032             MOVS     R2,R6
+   \   00000F64   0x003B             MOVS     R3,R7
+   \   00000F66   0x.... 0x....      BL       __aeabi_dadd
+   \   00000F6A   0x0006             MOVS     R6,R0
+   \   00000F6C   0x000F             MOVS     R7,R1
+   \   00000F6E   0xF8DF 0x0530      LDR.W    R0,??Quadrotor_pid_21+0xD8
+   \   00000F72   0x6801             LDR      R1,[R0, #+0]
+   \   00000F74   0xF8DF 0x04E4      LDR.W    R0,??Quadrotor_pid_21+0x94
+   \   00000F78   0x6800             LDR      R0,[R0, #+0]
+   \   00000F7A   0x.... 0x....      BL       __aeabi_fmul
+   \   00000F7E   0x.... 0x....      BL       __aeabi_f2d
+   \   00000F82   0x0032             MOVS     R2,R6
+   \   00000F84   0x003B             MOVS     R3,R7
+   \   00000F86   0x.... 0x....      BL       __aeabi_dadd
+   \   00000F8A   0x0006             MOVS     R6,R0
+   \   00000F8C   0x000F             MOVS     R7,R1
+   \   00000F8E   0xF8DF 0x0514      LDR.W    R0,??Quadrotor_pid_21+0xDC
+   \   00000F92   0x6800             LDR      R0,[R0, #+0]
+   \   00000F94   0x0021             MOVS     R1,R4
+   \   00000F96   0x.... 0x....      BL       __aeabi_fmul
+   \   00000F9A   0x.... 0x....      BL       __aeabi_f2d
+   \   00000F9E   0x0032             MOVS     R2,R6
+   \   00000FA0   0x003B             MOVS     R3,R7
+   \   00000FA2   0x.... 0x....      BL       __aeabi_dadd
+   \   00000FA6   0x.... 0x....      BL       __aeabi_d2f
+   \   00000FAA   0xF8DF 0x14FC      LDR.W    R1,??Quadrotor_pid_21+0xE0
+   \   00000FAE   0x6008             STR      R0,[R1, #+0]
+    542                  W_Axis_2 = (-target_y ) * Ky - sum_axisy * Kiy - Kdy * dot_targety  - err_vy * kvy ;
+   \   00000FB0   0xF8DF 0x04AC      LDR.W    R0,??Quadrotor_pid_21+0x98
+   \   00000FB4   0x6801             LDR      R1,[R0, #+0]
+   \   00000FB6   0xF091 0x4100      EORS     R1,R1,#0x80000000
+   \   00000FBA   0xF8DF 0x04F0      LDR.W    R0,??Quadrotor_pid_21+0xE4
+   \   00000FBE   0x6800             LDR      R0,[R0, #+0]
+   \   00000FC0   0x.... 0x....      BL       __aeabi_fmul
+   \   00000FC4   0x.... 0x....      BL       __aeabi_f2d
+   \   00000FC8   0x0006             MOVS     R6,R0
+   \   00000FCA   0x000F             MOVS     R7,R1
+   \   00000FCC   0xF8DF 0x04E0      LDR.W    R0,??Quadrotor_pid_21+0xE8
+   \   00000FD0   0x6800             LDR      R0,[R0, #+0]
+   \   00000FD2   0x.... 0x....      BL       __aeabi_f2d
+   \   00000FD6   0xF8DF 0xC49C      LDR.W    R12,??Quadrotor_pid_21+0xAC
+   \   00000FDA   0xE9DC 0x2300      LDRD     R2,R3,[R12, #+0]
+   \   00000FDE   0x.... 0x....      BL       __aeabi_dmul
+   \   00000FE2   0x0002             MOVS     R2,R0
+   \   00000FE4   0x000B             MOVS     R3,R1
+   \   00000FE6   0x0030             MOVS     R0,R6
+   \   00000FE8   0x0039             MOVS     R1,R7
+   \   00000FEA   0x.... 0x....      BL       __aeabi_dsub
+   \   00000FEE   0x0006             MOVS     R6,R0
+   \   00000FF0   0x000F             MOVS     R7,R1
+   \   00000FF2   0xF8DF 0x04C0      LDR.W    R0,??Quadrotor_pid_21+0xEC
+   \   00000FF6   0x6801             LDR      R1,[R0, #+0]
+   \   00000FF8   0xF8DF 0x0468      LDR.W    R0,??Quadrotor_pid_21+0x9C
+   \   00000FFC   0x6800             LDR      R0,[R0, #+0]
+   \   00000FFE   0x.... 0x....      BL       __aeabi_fmul
+   \   00001002   0x.... 0x....      BL       __aeabi_f2d
+   \   00001006   0x0002             MOVS     R2,R0
+   \   00001008   0x000B             MOVS     R3,R1
+   \   0000100A   0x0030             MOVS     R0,R6
+   \   0000100C   0x0039             MOVS     R1,R7
+   \   0000100E   0x.... 0x....      BL       __aeabi_dsub
+   \   00001012   0x0006             MOVS     R6,R0
+   \   00001014   0x000F             MOVS     R7,R1
+   \   00001016   0xF8DF 0x04A0      LDR.W    R0,??Quadrotor_pid_21+0xF0
+   \   0000101A   0x6800             LDR      R0,[R0, #+0]
+   \   0000101C   0x0029             MOVS     R1,R5
+   \   0000101E   0x.... 0x....      BL       __aeabi_fmul
+   \   00001022   0x.... 0x....      BL       __aeabi_f2d
+   \   00001026   0x0002             MOVS     R2,R0
+   \   00001028   0x000B             MOVS     R3,R1
+   \   0000102A   0x0030             MOVS     R0,R6
+   \   0000102C   0x0039             MOVS     R1,R7
+   \   0000102E   0x.... 0x....      BL       __aeabi_dsub
+   \   00001032   0x.... 0x....      BL       __aeabi_d2f
+   \   00001036   0xF8DF 0x1484      LDR.W    R1,??Quadrotor_pid_21+0xF4
+   \   0000103A   0x6008             STR      R0,[R1, #+0]
+    543                  W_Axis_3 = (-target_x ) * Kx - sum_axisx * Kix - Kdx * dot_targetx  - err_vx * kvx ;
+   \   0000103C   0xF8DF 0x0418      LDR.W    R0,??Quadrotor_pid_21+0x90
+   \   00001040   0x6801             LDR      R1,[R0, #+0]
+   \   00001042   0xF091 0x4100      EORS     R1,R1,#0x80000000
+   \   00001046   0xF8DF 0x0450      LDR.W    R0,??Quadrotor_pid_21+0xD0
+   \   0000104A   0x6800             LDR      R0,[R0, #+0]
+   \   0000104C   0x.... 0x....      BL       __aeabi_fmul
+   \   00001050   0x.... 0x....      BL       __aeabi_f2d
+   \   00001054   0x0006             MOVS     R6,R0
+   \   00001056   0x000F             MOVS     R7,R1
+   \   00001058   0xF8DF 0x0440      LDR.W    R0,??Quadrotor_pid_21+0xD4
+   \   0000105C   0x6800             LDR      R0,[R0, #+0]
+   \   0000105E   0x.... 0x....      BL       __aeabi_f2d
+   \   00001062   0xF8DF 0xC40C      LDR.W    R12,??Quadrotor_pid_21+0xA8
+   \   00001066   0xE9DC 0x2300      LDRD     R2,R3,[R12, #+0]
+   \   0000106A   0x.... 0x....      BL       __aeabi_dmul
+   \   0000106E   0x0002             MOVS     R2,R0
+   \   00001070   0x000B             MOVS     R3,R1
+   \   00001072   0x0030             MOVS     R0,R6
+   \   00001074   0x0039             MOVS     R1,R7
+   \   00001076   0x.... 0x....      BL       __aeabi_dsub
+   \   0000107A   0x0006             MOVS     R6,R0
+   \   0000107C   0x000F             MOVS     R7,R1
+   \   0000107E   0xF8DF 0x0420      LDR.W    R0,??Quadrotor_pid_21+0xD8
+   \   00001082   0x6801             LDR      R1,[R0, #+0]
+   \   00001084   0xF8DF 0x03D4      LDR.W    R0,??Quadrotor_pid_21+0x94
+   \   00001088   0x6800             LDR      R0,[R0, #+0]
+   \   0000108A   0x.... 0x....      BL       __aeabi_fmul
+   \   0000108E   0x.... 0x....      BL       __aeabi_f2d
+   \   00001092   0x0002             MOVS     R2,R0
+   \   00001094   0x000B             MOVS     R3,R1
+   \   00001096   0x0030             MOVS     R0,R6
+   \   00001098   0x0039             MOVS     R1,R7
+   \   0000109A   0x.... 0x....      BL       __aeabi_dsub
+   \   0000109E   0x0006             MOVS     R6,R0
+   \   000010A0   0x000F             MOVS     R7,R1
+   \   000010A2   0xF8DF 0x0400      LDR.W    R0,??Quadrotor_pid_21+0xDC
+   \   000010A6   0x6800             LDR      R0,[R0, #+0]
+   \   000010A8   0x0021             MOVS     R1,R4
+   \   000010AA   0x.... 0x....      BL       __aeabi_fmul
+   \   000010AE   0x.... 0x....      BL       __aeabi_f2d
+   \   000010B2   0x0002             MOVS     R2,R0
+   \   000010B4   0x000B             MOVS     R3,R1
+   \   000010B6   0x0030             MOVS     R0,R6
+   \   000010B8   0x0039             MOVS     R1,R7
+   \   000010BA   0x.... 0x....      BL       __aeabi_dsub
+   \   000010BE   0x.... 0x....      BL       __aeabi_d2f
+   \   000010C2   0xF8DF 0x13FC      LDR.W    R1,??Quadrotor_pid_21+0xF8
+   \   000010C6   0x6008             STR      R0,[R1, #+0]
+    544                  W_Axis_4 = target_y     * Ky + sum_axisy * Kiy + Kdy * dot_targety  + err_vy * kvy ;
+   \   000010C8   0xF8DF 0x0394      LDR.W    R0,??Quadrotor_pid_21+0x98
+   \   000010CC   0x6801             LDR      R1,[R0, #+0]
+   \   000010CE   0xF8DF 0x03DC      LDR.W    R0,??Quadrotor_pid_21+0xE4
+   \   000010D2   0x6800             LDR      R0,[R0, #+0]
+   \   000010D4   0x.... 0x....      BL       __aeabi_fmul
+   \   000010D8   0x.... 0x....      BL       __aeabi_f2d
+   \   000010DC   0x0006             MOVS     R6,R0
+   \   000010DE   0x000F             MOVS     R7,R1
+   \   000010E0   0xF8DF 0x03CC      LDR.W    R0,??Quadrotor_pid_21+0xE8
+   \   000010E4   0x6800             LDR      R0,[R0, #+0]
+   \   000010E6   0x.... 0x....      BL       __aeabi_f2d
+   \   000010EA   0xF8DF 0x4388      LDR.W    R4,??Quadrotor_pid_21+0xAC
+   \   000010EE   0xE9D4 0x2300      LDRD     R2,R3,[R4, #+0]
+   \   000010F2   0x.... 0x....      BL       __aeabi_dmul
+   \   000010F6   0x0032             MOVS     R2,R6
+   \   000010F8   0x003B             MOVS     R3,R7
+   \   000010FA   0x.... 0x....      BL       __aeabi_dadd
+   \   000010FE   0x0006             MOVS     R6,R0
+   \   00001100   0x000F             MOVS     R7,R1
+   \   00001102   0xF8DF 0x03B0      LDR.W    R0,??Quadrotor_pid_21+0xEC
+   \   00001106   0x6801             LDR      R1,[R0, #+0]
+   \   00001108   0xF8DF 0x0358      LDR.W    R0,??Quadrotor_pid_21+0x9C
+   \   0000110C   0x6800             LDR      R0,[R0, #+0]
+   \   0000110E   0x.... 0x....      BL       __aeabi_fmul
+   \   00001112   0x.... 0x....      BL       __aeabi_f2d
+   \   00001116   0x0032             MOVS     R2,R6
+   \   00001118   0x003B             MOVS     R3,R7
+   \   0000111A   0x.... 0x....      BL       __aeabi_dadd
+   \   0000111E   0x0006             MOVS     R6,R0
+   \   00001120   0x000F             MOVS     R7,R1
+   \   00001122   0xF8DF 0x0394      LDR.W    R0,??Quadrotor_pid_21+0xF0
+   \   00001126   0x6800             LDR      R0,[R0, #+0]
+   \   00001128   0x0029             MOVS     R1,R5
+   \   0000112A   0x.... 0x....      BL       __aeabi_fmul
+   \   0000112E   0x.... 0x....      BL       __aeabi_f2d
+   \   00001132   0x0032             MOVS     R2,R6
+   \   00001134   0x003B             MOVS     R3,R7
+   \   00001136   0x.... 0x....      BL       __aeabi_dadd
+   \   0000113A   0x.... 0x....      BL       __aeabi_d2f
+   \   0000113E   0xF8DF 0x1384      LDR.W    R1,??Quadrotor_pid_21+0xFC
+   \   00001142   0x6008             STR      R0,[R1, #+0]
+    545                  
+    546          //        if(startMotion == true && signal_target==true && Landing == false)
+    547          //        {
+    548          //          W_Axis_1 =   (-errX)  * Kx1   - dotErrX * Kdx1;//  - sumErrX * Kix;              
+    549          //          W_Axis_2 =    -errY   * Ky1   - dotErrY * Kdy1;//  + sumErrY * Kiy;
+    550          //          W_Axis_3 =    errX    * Kx1   + dotErrX * Kdx1;//  + sumErrX * Kix;
+    551          //          W_Axis_4 =   (errY)   * Ky1   + dotErrY * Kdy1;//  - sumErrY * Kiy;
+    552          //        }
+    553          
+    554          //        *posx = SumDeltX;
+    555          //        posx++;
+    556          //        *posy = SumDeltY;
+    557          //        posy++;
+    558              }
+    559             // BASE_VALUE = 1000;W1=0;W2=0;W3=0;W4=0 
+    560              w1 =  BASE_VALUE + (int)(W1 + W_Axis_1);
+   \                     ??Quadrotor_pid_20:
+   \   00001144   0x4880             LDR.N    R0,??Quadrotor_pid_14+0x34
+   \   00001146   0x8804             LDRH     R4,[R0, #+0]
+   \   00001148   0x9905             LDR      R1,[SP, #+20]
+   \   0000114A   0xF8DF 0x035C      LDR.W    R0,??Quadrotor_pid_21+0xE0
+   \   0000114E   0x6800             LDR      R0,[R0, #+0]
+   \   00001150   0x.... 0x....      BL       __aeabi_fadd
+   \   00001154   0x.... 0x....      BL       __aeabi_f2iz
+   \   00001158   0xFA10 0xF084      UXTAH    R0,R0,R4
+   \   0000115C   0xF8DF 0x1368      LDR.W    R1,??Quadrotor_pid_21+0x100
+   \   00001160   0x6008             STR      R0,[R1, #+0]
+    561              w2 =  BASE_VALUE + (int)(W2 + W_Axis_2);
+   \   00001162   0x4879             LDR.N    R0,??Quadrotor_pid_14+0x34
+   \   00001164   0x8804             LDRH     R4,[R0, #+0]
+   \   00001166   0x9904             LDR      R1,[SP, #+16]
+   \   00001168   0xF8DF 0x0350      LDR.W    R0,??Quadrotor_pid_21+0xF4
+   \   0000116C   0x6800             LDR      R0,[R0, #+0]
+   \   0000116E   0x.... 0x....      BL       __aeabi_fadd
+   \   00001172   0x.... 0x....      BL       __aeabi_f2iz
+   \   00001176   0xFA10 0xF084      UXTAH    R0,R0,R4
+   \   0000117A   0xF8DF 0x1350      LDR.W    R1,??Quadrotor_pid_21+0x104
+   \   0000117E   0x6008             STR      R0,[R1, #+0]
+    562              w3 =  BASE_VALUE + (int)(W3 + W_Axis_3);
+   \   00001180   0x4871             LDR.N    R0,??Quadrotor_pid_14+0x34
+   \   00001182   0x8804             LDRH     R4,[R0, #+0]
+   \   00001184   0x9903             LDR      R1,[SP, #+12]
+   \   00001186   0xF8DF 0x0338      LDR.W    R0,??Quadrotor_pid_21+0xF8
+   \   0000118A   0x6800             LDR      R0,[R0, #+0]
+   \   0000118C   0x.... 0x....      BL       __aeabi_fadd
+   \   00001190   0x.... 0x....      BL       __aeabi_f2iz
+   \   00001194   0xFA10 0xF084      UXTAH    R0,R0,R4
+   \   00001198   0xF8DF 0x1334      LDR.W    R1,??Quadrotor_pid_21+0x108
+   \   0000119C   0x6008             STR      R0,[R1, #+0]
+    563              w4 =  BASE_VALUE + (int)(W4 + W_Axis_4);
+   \   0000119E   0x486A             LDR.N    R0,??Quadrotor_pid_14+0x34
+   \   000011A0   0x8804             LDRH     R4,[R0, #+0]
+   \   000011A2   0x9902             LDR      R1,[SP, #+8]
+   \   000011A4   0x48C7             LDR.N    R0,??Quadrotor_pid_21+0xFC
+   \   000011A6   0x6800             LDR      R0,[R0, #+0]
+   \   000011A8   0x.... 0x....      BL       __aeabi_fadd
+   \   000011AC   0x.... 0x....      BL       __aeabi_f2iz
+   \   000011B0   0xFA10 0xF084      UXTAH    R0,R0,R4
+   \   000011B4   0x49C7             LDR.N    R1,??Quadrotor_pid_21+0x10C
+   \   000011B6   0x6008             STR      R0,[R1, #+0]
+    564              
+    565                    //TEST5=(int)(W1 + W_Axis_1);
+    566          
+    567              if(w1 - last_w1 > Inc_max)w1 = last_w1 + Inc_max;
+   \   000011B8   0x48C3             LDR.N    R0,??Quadrotor_pid_21+0x100
+   \   000011BA   0x6800             LDR      R0,[R0, #+0]
+   \   000011BC   0x49C6             LDR.N    R1,??Quadrotor_pid_21+0x110
+   \   000011BE   0x6809             LDR      R1,[R1, #+0]
+   \   000011C0   0x1A40             SUBS     R0,R0,R1
+   \   000011C2   0x281F             CMP      R0,#+31
+   \   000011C4   0xDB05             BLT.N    ??Quadrotor_pid_40
+   \   000011C6   0x48C4             LDR.N    R0,??Quadrotor_pid_21+0x110
+   \   000011C8   0x6800             LDR      R0,[R0, #+0]
+   \   000011CA   0x301E             ADDS     R0,R0,#+30
+   \   000011CC   0x49BE             LDR.N    R1,??Quadrotor_pid_21+0x100
+   \   000011CE   0x6008             STR      R0,[R1, #+0]
+   \   000011D0   0xE00C             B.N      ??Quadrotor_pid_41
+    568              else if(w1 - last_w1 < Dec_max)w1 = last_w1 + Dec_max;
+   \                     ??Quadrotor_pid_40:
+   \   000011D2   0x48BD             LDR.N    R0,??Quadrotor_pid_21+0x100
+   \   000011D4   0x6800             LDR      R0,[R0, #+0]
+   \   000011D6   0x49C0             LDR.N    R1,??Quadrotor_pid_21+0x110
+   \   000011D8   0x6809             LDR      R1,[R1, #+0]
+   \   000011DA   0x1A40             SUBS     R0,R0,R1
+   \   000011DC   0xF110 0x0F1E      CMN      R0,#+30
+   \   000011E0   0xDA04             BGE.N    ??Quadrotor_pid_41
+   \   000011E2   0x48BD             LDR.N    R0,??Quadrotor_pid_21+0x110
+   \   000011E4   0x6800             LDR      R0,[R0, #+0]
+   \   000011E6   0x381E             SUBS     R0,R0,#+30
+   \   000011E8   0x49B7             LDR.N    R1,??Quadrotor_pid_21+0x100
+   \   000011EA   0x6008             STR      R0,[R1, #+0]
+    569          
+    570              if(w2 - last_w2 > Inc_max)w2 = last_w2 + Inc_max;
+   \                     ??Quadrotor_pid_41:
+   \   000011EC   0x48B7             LDR.N    R0,??Quadrotor_pid_21+0x104
+   \   000011EE   0x6800             LDR      R0,[R0, #+0]
+   \   000011F0   0x49BA             LDR.N    R1,??Quadrotor_pid_21+0x114
+   \   000011F2   0x6809             LDR      R1,[R1, #+0]
+   \   000011F4   0x1A40             SUBS     R0,R0,R1
+   \   000011F6   0x281F             CMP      R0,#+31
+   \   000011F8   0xDB05             BLT.N    ??Quadrotor_pid_42
+   \   000011FA   0x48B8             LDR.N    R0,??Quadrotor_pid_21+0x114
+   \   000011FC   0x6800             LDR      R0,[R0, #+0]
+   \   000011FE   0x301E             ADDS     R0,R0,#+30
+   \   00001200   0x49B2             LDR.N    R1,??Quadrotor_pid_21+0x104
+   \   00001202   0x6008             STR      R0,[R1, #+0]
+   \   00001204   0xE00C             B.N      ??Quadrotor_pid_43
+    571              else if(w2 - last_w2 < Dec_max)w2 = last_w2 + Dec_max;
+   \                     ??Quadrotor_pid_42:
+   \   00001206   0x48B1             LDR.N    R0,??Quadrotor_pid_21+0x104
+   \   00001208   0x6800             LDR      R0,[R0, #+0]
+   \   0000120A   0x49B4             LDR.N    R1,??Quadrotor_pid_21+0x114
+   \   0000120C   0x6809             LDR      R1,[R1, #+0]
+   \   0000120E   0x1A40             SUBS     R0,R0,R1
+   \   00001210   0xF110 0x0F1E      CMN      R0,#+30
+   \   00001214   0xDA04             BGE.N    ??Quadrotor_pid_43
+   \   00001216   0x48B1             LDR.N    R0,??Quadrotor_pid_21+0x114
+   \   00001218   0x6800             LDR      R0,[R0, #+0]
+   \   0000121A   0x381E             SUBS     R0,R0,#+30
+   \   0000121C   0x49AB             LDR.N    R1,??Quadrotor_pid_21+0x104
+   \   0000121E   0x6008             STR      R0,[R1, #+0]
+    572          
+    573              if(w3 - last_w3 > Inc_max)w3 = last_w3 + Inc_max;
+   \                     ??Quadrotor_pid_43:
+   \   00001220   0x48AB             LDR.N    R0,??Quadrotor_pid_21+0x108
+   \   00001222   0x6800             LDR      R0,[R0, #+0]
+   \   00001224   0x49AE             LDR.N    R1,??Quadrotor_pid_21+0x118
+   \   00001226   0x6809             LDR      R1,[R1, #+0]
+   \   00001228   0x1A40             SUBS     R0,R0,R1
+   \   0000122A   0x281F             CMP      R0,#+31
+   \   0000122C   0xDB05             BLT.N    ??Quadrotor_pid_44
+   \   0000122E   0x48AC             LDR.N    R0,??Quadrotor_pid_21+0x118
+   \   00001230   0x6800             LDR      R0,[R0, #+0]
+   \   00001232   0x301E             ADDS     R0,R0,#+30
+   \   00001234   0x49A6             LDR.N    R1,??Quadrotor_pid_21+0x108
+   \   00001236   0x6008             STR      R0,[R1, #+0]
+   \   00001238   0xE00C             B.N      ??Quadrotor_pid_45
+    574              else if(w3 - last_w3 < Dec_max)w3 = last_w3 + Dec_max;
+   \                     ??Quadrotor_pid_44:
+   \   0000123A   0x48A5             LDR.N    R0,??Quadrotor_pid_21+0x108
+   \   0000123C   0x6800             LDR      R0,[R0, #+0]
+   \   0000123E   0x49A8             LDR.N    R1,??Quadrotor_pid_21+0x118
+   \   00001240   0x6809             LDR      R1,[R1, #+0]
+   \   00001242   0x1A40             SUBS     R0,R0,R1
+   \   00001244   0xF110 0x0F1E      CMN      R0,#+30
+   \   00001248   0xDA04             BGE.N    ??Quadrotor_pid_45
+   \   0000124A   0x48A5             LDR.N    R0,??Quadrotor_pid_21+0x118
+   \   0000124C   0x6800             LDR      R0,[R0, #+0]
+   \   0000124E   0x381E             SUBS     R0,R0,#+30
+   \   00001250   0x499F             LDR.N    R1,??Quadrotor_pid_21+0x108
+   \   00001252   0x6008             STR      R0,[R1, #+0]
+    575          
+    576              if(w4 - last_w4 > Inc_max)w4 = last_w4 + Inc_max;
+   \                     ??Quadrotor_pid_45:
+   \   00001254   0x489F             LDR.N    R0,??Quadrotor_pid_21+0x10C
+   \   00001256   0x6800             LDR      R0,[R0, #+0]
+   \   00001258   0x49A2             LDR.N    R1,??Quadrotor_pid_21+0x11C
+   \   0000125A   0x6809             LDR      R1,[R1, #+0]
+   \   0000125C   0x1A40             SUBS     R0,R0,R1
+   \   0000125E   0x281F             CMP      R0,#+31
+   \   00001260   0xDB05             BLT.N    ??Quadrotor_pid_46
+   \   00001262   0x48A0             LDR.N    R0,??Quadrotor_pid_21+0x11C
+   \   00001264   0x6800             LDR      R0,[R0, #+0]
+   \   00001266   0x301E             ADDS     R0,R0,#+30
+   \   00001268   0x499A             LDR.N    R1,??Quadrotor_pid_21+0x10C
+   \   0000126A   0x6008             STR      R0,[R1, #+0]
+   \   0000126C   0xE00C             B.N      ??Quadrotor_pid_47
+    577              else if(w4 - last_w4 < Dec_max)w4 = last_w4 + Dec_max;
+   \                     ??Quadrotor_pid_46:
+   \   0000126E   0x4899             LDR.N    R0,??Quadrotor_pid_21+0x10C
+   \   00001270   0x6800             LDR      R0,[R0, #+0]
+   \   00001272   0x499C             LDR.N    R1,??Quadrotor_pid_21+0x11C
+   \   00001274   0x6809             LDR      R1,[R1, #+0]
+   \   00001276   0x1A40             SUBS     R0,R0,R1
+   \   00001278   0xF110 0x0F1E      CMN      R0,#+30
+   \   0000127C   0xDA04             BGE.N    ??Quadrotor_pid_47
+   \   0000127E   0x4899             LDR.N    R0,??Quadrotor_pid_21+0x11C
+   \   00001280   0x6800             LDR      R0,[R0, #+0]
+   \   00001282   0x381E             SUBS     R0,R0,#+30
+   \   00001284   0x4993             LDR.N    R1,??Quadrotor_pid_21+0x10C
+   \   00001286   0x6008             STR      R0,[R1, #+0]
+    578          
+    579          
+    580              // ctrl+k 注释
+    581              // ctrl+shift+k取消注释
+    582              //////////限制电机PWM在电调范围内1ms-2ms///////////////////////////////////////
+    583          
+    584          
+    585              if(w1 < THREAD_BOTTOM)   w1 = THREAD_BOTTOM;
+   \                     ??Quadrotor_pid_47:
+   \   00001288   0x488F             LDR.N    R0,??Quadrotor_pid_21+0x100
+   \   0000128A   0x6800             LDR      R0,[R0, #+0]
+   \   0000128C   0xF5B0 0x7F7A      CMP      R0,#+1000
+   \   00001290   0xDA04             BGE.N    ??Quadrotor_pid_48
+   \   00001292   0x488D             LDR.N    R0,??Quadrotor_pid_21+0x100
+   \   00001294   0xF44F 0x717A      MOV      R1,#+1000
+   \   00001298   0x6001             STR      R1,[R0, #+0]
+   \   0000129A   0xE009             B.N      ??Quadrotor_pid_49
+    586              else if(w1 > THREAD_TOP) w1 = THREAD_TOP;
+   \                     ??Quadrotor_pid_48:
+   \   0000129C   0x488A             LDR.N    R0,??Quadrotor_pid_21+0x100
+   \   0000129E   0x6800             LDR      R0,[R0, #+0]
+   \   000012A0   0xF240 0x71C7      MOVW     R1,#+1991
+   \   000012A4   0x4288             CMP      R0,R1
+   \   000012A6   0xDB03             BLT.N    ??Quadrotor_pid_49
+   \   000012A8   0x4887             LDR.N    R0,??Quadrotor_pid_21+0x100
+   \   000012AA   0xF240 0x71C6      MOVW     R1,#+1990
+   \   000012AE   0x6001             STR      R1,[R0, #+0]
+    587          
+    588              if(w2 < THREAD_BOTTOM)   w2 = THREAD_BOTTOM;
+   \                     ??Quadrotor_pid_49:
+   \   000012B0   0x4886             LDR.N    R0,??Quadrotor_pid_21+0x104
+   \   000012B2   0x6800             LDR      R0,[R0, #+0]
+   \   000012B4   0xF5B0 0x7F7A      CMP      R0,#+1000
+   \   000012B8   0xDA04             BGE.N    ??Quadrotor_pid_50
+   \   000012BA   0x4884             LDR.N    R0,??Quadrotor_pid_21+0x104
+   \   000012BC   0xF44F 0x717A      MOV      R1,#+1000
+   \   000012C0   0x6001             STR      R1,[R0, #+0]
+   \   000012C2   0xE009             B.N      ??Quadrotor_pid_51
+    589              else if(w2 > THREAD_TOP) w2 = THREAD_TOP;
+   \                     ??Quadrotor_pid_50:
+   \   000012C4   0x4881             LDR.N    R0,??Quadrotor_pid_21+0x104
+   \   000012C6   0x6800             LDR      R0,[R0, #+0]
+   \   000012C8   0xF240 0x71C7      MOVW     R1,#+1991
+   \   000012CC   0x4288             CMP      R0,R1
+   \   000012CE   0xDB03             BLT.N    ??Quadrotor_pid_51
+   \   000012D0   0x487E             LDR.N    R0,??Quadrotor_pid_21+0x104
+   \   000012D2   0xF240 0x71C6      MOVW     R1,#+1990
+   \   000012D6   0x6001             STR      R1,[R0, #+0]
+    590          
+    591              if(w3 < THREAD_BOTTOM)   w3 = THREAD_BOTTOM;
+   \                     ??Quadrotor_pid_51:
+   \   000012D8   0x487D             LDR.N    R0,??Quadrotor_pid_21+0x108
+   \   000012DA   0x6800             LDR      R0,[R0, #+0]
+   \   000012DC   0xF5B0 0x7F7A      CMP      R0,#+1000
+   \   000012E0   0xDA04             BGE.N    ??Quadrotor_pid_52
+   \   000012E2   0x487B             LDR.N    R0,??Quadrotor_pid_21+0x108
+   \   000012E4   0xF44F 0x717A      MOV      R1,#+1000
+   \   000012E8   0x6001             STR      R1,[R0, #+0]
+   \   000012EA   0xE009             B.N      ??Quadrotor_pid_53
+    592              else if(w3 > THREAD_TOP) w3 = THREAD_TOP;
+   \                     ??Quadrotor_pid_52:
+   \   000012EC   0x4878             LDR.N    R0,??Quadrotor_pid_21+0x108
+   \   000012EE   0x6800             LDR      R0,[R0, #+0]
+   \   000012F0   0xF240 0x71C7      MOVW     R1,#+1991
+   \   000012F4   0x4288             CMP      R0,R1
+   \   000012F6   0xDB03             BLT.N    ??Quadrotor_pid_53
+   \   000012F8   0x4875             LDR.N    R0,??Quadrotor_pid_21+0x108
+   \   000012FA   0xF240 0x71C6      MOVW     R1,#+1990
+   \   000012FE   0x6001             STR      R1,[R0, #+0]
+    593          
+    594              if(w4 < THREAD_BOTTOM)    w4 = THREAD_BOTTOM;
+   \                     ??Quadrotor_pid_53:
+   \   00001300   0x4874             LDR.N    R0,??Quadrotor_pid_21+0x10C
+   \   00001302   0x6800             LDR      R0,[R0, #+0]
+   \   00001304   0xF5B0 0x7F7A      CMP      R0,#+1000
+   \   00001308   0xDA26             BGE.N    ??Quadrotor_pid_54
+   \   0000130A   0x4872             LDR.N    R0,??Quadrotor_pid_21+0x10C
+   \   0000130C   0xF44F 0x717A      MOV      R1,#+1000
+   \   00001310   0x6001             STR      R1,[R0, #+0]
+   \   00001312   0xE02B             B.N      ??Quadrotor_pid_55
+   \                     ??Quadrotor_pid_14:
+   \   00001314   0x40400001         DC32     0x40400001
+   \   00001318   0x........         DC32     ??count
+   \   0000131C   0x9999999A         DC32     0x9999999a
+   \   00001320   0x3FC99999         DC32     0x3fc99999
+   \   00001324   0x40000001         DC32     0x40000001
+   \   00001328   0xBFB99999         DC32     0xbfb99999
+   \   0000132C   0x........         DC32     Stop_flag
+   \   00001330   0x43E10000         DC32     0x43e10000
+   \   00001334   0xBFD00000         DC32     0xbfd00000
+   \   00001338   0x........         DC32     Time_counter
+   \   0000133C   0x40040000         DC32     0x40040000
+   \   00001340   0x408F4000         DC32     0x408f4000
+   \   00001344   0x4062C000         DC32     0x4062c000
+   \   00001348   0x........         DC32     BASE_VALUE
+   \   0000134C   0x........         DC32     sendcount
+   \   00001350   0x........         DC32     send_data
+   \   00001354   0x4006B000         DC32     0x4006b000
+    595              else if(w4 > THREAD_TOP) w4 = THREAD_TOP;
+   \                     ??Quadrotor_pid_54:
+   \   00001358   0x485E             LDR.N    R0,??Quadrotor_pid_21+0x10C
+   \   0000135A   0x6800             LDR      R0,[R0, #+0]
+   \   0000135C   0xF240 0x71C7      MOVW     R1,#+1991
+   \   00001360   0x4288             CMP      R0,R1
+   \   00001362   0xDB03             BLT.N    ??Quadrotor_pid_55
+   \   00001364   0x485B             LDR.N    R0,??Quadrotor_pid_21+0x10C
+   \   00001366   0xF240 0x71C6      MOVW     R1,#+1990
+   \   0000136A   0x6001             STR      R1,[R0, #+0]
+    596          
+    597              
+    598              /////////////输出PWM////////////////////////////////////////////////////////////
+    599          //        if(w1 > 1200)w1=1200;
+    600          //        if(w2 > 1200)w2=1200;
+    601          //        if(w3 > 1200)w3=1200;
+    602          //        if(w4 > 1200)w4=1200;
+    603          //   w1 = (2*w1 + 8*last_w1)/10;
+    604          //   w2 = (2*w2 + 8*last_w2)/10;
+    605          //   w3 = (2*w3 + 8*last_w3)/10;
+    606          //   w4 = (2*w4 + 8*last_w4)/10;
+    607              set_pwm(w1, w2, w3, w4);
+   \                     ??Quadrotor_pid_55:
+   \   0000136C   0x4859             LDR.N    R0,??Quadrotor_pid_21+0x10C
+   \   0000136E   0x6803             LDR      R3,[R0, #+0]
+   \   00001370   0xB29B             UXTH     R3,R3            ;; ZeroExt  R3,R3,#+16,#+16
+   \   00001372   0x4857             LDR.N    R0,??Quadrotor_pid_21+0x108
+   \   00001374   0x6802             LDR      R2,[R0, #+0]
+   \   00001376   0xB292             UXTH     R2,R2            ;; ZeroExt  R2,R2,#+16,#+16
+   \   00001378   0x4854             LDR.N    R0,??Quadrotor_pid_21+0x104
+   \   0000137A   0x6801             LDR      R1,[R0, #+0]
+   \   0000137C   0xB289             UXTH     R1,R1            ;; ZeroExt  R1,R1,#+16,#+16
+   \   0000137E   0x4852             LDR.N    R0,??Quadrotor_pid_21+0x100
+   \   00001380   0x6800             LDR      R0,[R0, #+0]
+   \   00001382   0xB280             UXTH     R0,R0            ;; ZeroExt  R0,R0,#+16,#+16
+   \   00001384   0x.... 0x....      BL       set_pwm
+    608              last_w1 = w1;
+   \   00001388   0x4853             LDR.N    R0,??Quadrotor_pid_21+0x110
+   \   0000138A   0x494F             LDR.N    R1,??Quadrotor_pid_21+0x100
+   \   0000138C   0x6809             LDR      R1,[R1, #+0]
+   \   0000138E   0x6001             STR      R1,[R0, #+0]
+    609              last_w2 = w2;
+   \   00001390   0x4852             LDR.N    R0,??Quadrotor_pid_21+0x114
+   \   00001392   0x494E             LDR.N    R1,??Quadrotor_pid_21+0x104
+   \   00001394   0x6809             LDR      R1,[R1, #+0]
+   \   00001396   0x6001             STR      R1,[R0, #+0]
+    610              last_w3 = w3;
+   \   00001398   0x4851             LDR.N    R0,??Quadrotor_pid_21+0x118
+   \   0000139A   0x494D             LDR.N    R1,??Quadrotor_pid_21+0x108
+   \   0000139C   0x6809             LDR      R1,[R1, #+0]
+   \   0000139E   0x6001             STR      R1,[R0, #+0]
+    611              last_w4 = w4;
+   \   000013A0   0x4850             LDR.N    R0,??Quadrotor_pid_21+0x11C
+   \   000013A2   0x494C             LDR.N    R1,??Quadrotor_pid_21+0x10C
+   \   000013A4   0x6809             LDR      R1,[R1, #+0]
+   \   000013A6   0x6001             STR      R1,[R0, #+0]
+    612              // set_pwm(1000, 1000, 1200,1000);
+    613              //POWER_OFF;
+    614              
+    615                
+    616          
+    617                 if(startMotion == true )//&& signal_target==true && Landing == false)
+   \   000013A8   0x4817             LDR.N    R0,??Quadrotor_pid_21+0x40
+   \   000013AA   0x7800             LDRB     R0,[R0, #+0]
+   \   000013AC   0x2800             CMP      R0,#+0
+   \   000013AE   0xD007             BEQ.N    ??Quadrotor_pid_56
+    618                 {
+    619                    writeDataToMemory(TEST1, TEST2, TEST3);
+   \   000013B0   0x484D             LDR.N    R0,??Quadrotor_pid_21+0x120
+   \   000013B2   0x6802             LDR      R2,[R0, #+0]
+   \   000013B4   0x484D             LDR.N    R0,??Quadrotor_pid_21+0x124
+   \   000013B6   0x6801             LDR      R1,[R0, #+0]
+   \   000013B8   0x484D             LDR.N    R0,??Quadrotor_pid_21+0x128
+   \   000013BA   0x6800             LDR      R0,[R0, #+0]
+   \   000013BC   0x.... 0x....      BL       writeDataToMemory
+    620                 }
+    621              
+    622              //Q_x, Q_y, Q_z,三个姿态角=====SumDeltX, SumDeltY, height为相对坐标
+    623          }
+   \                     ??Quadrotor_pid_56:
+   \   000013C0   0xB009             ADD      SP,SP,#+36
+   \   000013C2   0xE8BD 0x8FF0      POP      {R4-R11,PC}      ;; return
+   \   000013C6   0xBF00             Nop      
+   \                     ??Quadrotor_pid_21:
+   \   000013C8   0x........         DC32     signal_target
+   \   000013CC   0x........         DC32     steerFlag
+   \   000013D0   0x........         DC32     PWM_Y
+   \   000013D4   0x........         DC32     PWM_X
+   \   000013D8   0x........         DC32     re_X
+   \   000013DC   0x........         DC32     re_Y
+   \   000013E0   0x407C2000         DC32     0x407c2000
+   \   000013E4   0x........         DC32     err_angX
+   \   000013E8   0x407D7000         DC32     0x407d7000
+   \   000013EC   0x........         DC32     err_angY
+   \   000013F0   0x........         DC32     pre_err_angX
+   \   000013F4   0x........         DC32     pre_err_angY
+   \   000013F8   0x4092C000         DC32     0x4092c000
+   \   000013FC   0xEB851EB8         DC32     0xeb851eb8
+   \   00001400   0x3FBEB851         DC32     0x3fbeb851
+   \   00001404   0x........         DC32     camflag
+   \   00001408   0x........         DC32     startMotion
+   \   0000140C   0x........         DC32     des_PointX
+   \   00001410   0x........         DC32     des_PointY
+   \   00001414   0x........         DC32     errX
+   \   00001418   0x........         DC32     errY
+   \   0000141C   0x........         DC32     theta
+   \   00001420   0x40240000         DC32     0x40240000
+   \   00001424   0x3FB99999         DC32     0x3fb99999
+   \   00001428   0x41C80000         DC32     0x41c80000
+   \   0000142C   0x41C80001         DC32     0x41c80001
+   \   00001430   0x........         DC32     ??des_x
+   \   00001434   0x........         DC32     ??des_y
+   \   00001438   0x........         DC32     _flag_
+   \   0000143C   0x........         DC32     SumDeltX
+   \   00001440   0x........         DC32     preposx
+   \   00001444   0x3FE99999         DC32     0x3fe99999
+   \   00001448   0x........         DC32     SumDeltY
+   \   0000144C   0x........         DC32     preposy
+   \   00001450   0x........         DC32     Axis_x
+   \   00001454   0x........         DC32     Axis_y
+   \   00001458   0x........         DC32     ??target_x
+   \   0000145C   0x........         DC32     ??dot_targetx
+   \   00001460   0x........         DC32     ??target_y
+   \   00001464   0x........         DC32     ??dot_targety
+   \   00001468   0x........         DC32     ??last_dotx
+   \   0000146C   0x........         DC32     ??last_doty
+   \   00001470   0x........         DC32     ??sum_axisx
+   \   00001474   0x........         DC32     ??sum_axisy
+   \   00001478   0x........         DC32     ??lastErrX
+   \   0000147C   0x........         DC32     ??lastErrY
+   \   00001480   0x3FD33333         DC32     0x3fd33333
+   \   00001484   0x........         DC32     ??lastdotErrX
+   \   00001488   0x3FE66666         DC32     0x3fe66666
+   \   0000148C   0x........         DC32     ??lastdotErrY
+   \   00001490   0x........         DC32     ??sumErrX
+   \   00001494   0x........         DC32     ??sumErrY
+   \   00001498   0x........         DC32     Kx
+   \   0000149C   0x........         DC32     Kix
+   \   000014A0   0x........         DC32     Kdx
+   \   000014A4   0x........         DC32     kvx
+   \   000014A8   0x........         DC32     ??W_Axis_1
+   \   000014AC   0x........         DC32     Ky
+   \   000014B0   0x........         DC32     Kiy
+   \   000014B4   0x........         DC32     Kdy
+   \   000014B8   0x........         DC32     kvy
+   \   000014BC   0x........         DC32     ??W_Axis_2
+   \   000014C0   0x........         DC32     ??W_Axis_3
+   \   000014C4   0x........         DC32     ??W_Axis_4
+   \   000014C8   0x........         DC32     ??w1
+   \   000014CC   0x........         DC32     ??w2
+   \   000014D0   0x........         DC32     ??w3
+   \   000014D4   0x........         DC32     ??w4
+   \   000014D8   0x........         DC32     ??last_w1
+   \   000014DC   0x........         DC32     ??last_w2
+   \   000014E0   0x........         DC32     ??last_w3
+   \   000014E4   0x........         DC32     ??last_w4
+   \   000014E8   0x........         DC32     TEST3
+   \   000014EC   0x........         DC32     TEST2
+   \   000014F0   0x........         DC32     TEST1
+
+   \                                 In section .bss, align 4
+   \                     ??w1:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??w2:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??w3:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??w4:
+   \   00000000                      DS8 4
+
+   \                                 In section .data, align 4
+   \                     ??last_w1:
+   \   00000000   0x000003E8         DC32 1000
+
+   \                                 In section .data, align 4
+   \                     ??last_w2:
+   \   00000000   0x000003E8         DC32 1000
+
+   \                                 In section .data, align 4
+   \                     ??last_w3:
+   \   00000000   0x000003E8         DC32 1000
+
+   \                                 In section .data, align 4
+   \                     ??last_w4:
+   \   00000000   0x000003E8         DC32 1000
+
+   \                                 In section .bss, align 4
+   \                     ??des_pitch:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??des_roll:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??des_yaw:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??pre_err_pitch:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??pre_err_roll:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??pre_err_yaw:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??pre_err_high:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 8
+   \                     ??sum_err_pitch:
+   \   00000000                      DS8 8
+
+   \                                 In section .bss, align 8
+   \                     ??sum_err_roll:
+   \   00000000                      DS8 8
+
+   \                                 In section .bss, align 8
+   \                     ??sum_err_yaw:
+   \   00000000                      DS8 8
+
+   \                                 In section .bss, align 8
+   \                     ??sum_err_high:
+   \   00000000                      DS8 8
+
+   \                                 In section .bss, align 4
+   \                     ??count:
+   \   00000000                      DS8 4
+
+   \                                 In section .data, align 4
+   \                     ??des_high:
+   \   00000000   0x42480000         DC32 42480000H
+
+   \                                 In section .bss, align 1
+   \                     ??K:
+   \   00000000                      DS8 1
+
+   \                                 In section .bss, align 1
+   \                     ??high_f:
+   \   00000000                      DS8 1
+
+   \                                 In section .bss, align 4
+   \                     ??W_Axis_1:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??W_Axis_2:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??W_Axis_3:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??W_Axis_4:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??k_high:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??lastErrX:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??lastErrY:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 8
+   \                     ??sumErrX:
+   \   00000000                      DS8 8
+
+   \                                 In section .bss, align 8
+   \                     ??sumErrY:
+   \   00000000                      DS8 8
+
+   \                                 In section .bss, align 8
+   \                     ??sum_axisx:
+   \   00000000                      DS8 8
+
+   \                                 In section .bss, align 8
+   \                     ??sum_axisy:
+   \   00000000                      DS8 8
+
+   \                                 In section .bss, align 4
+   \                     ??target_x:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??target_y:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??dot_targetx:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??dot_targety:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??des_x:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??des_y:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??last_dotx:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??last_doty:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??lastdotErrX:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     ??lastdotErrY:
+   \   00000000                      DS8 4
+    624          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       72  Quadrotor_pid
+             72 -> ReadANDS3080
+             72 -> SendFloat
+             72 -> __aeabi_cdrcmple
+             72 -> __aeabi_cfcmple
+             72 -> __aeabi_cfrcmple
+             72 -> __aeabi_d2f
+             72 -> __aeabi_d2iz
+             72 -> __aeabi_dadd
+             72 -> __aeabi_ddiv
+             72 -> __aeabi_dmul
+             72 -> __aeabi_dsub
+             72 -> __aeabi_f2d
+             72 -> __aeabi_f2iz
+             72 -> __aeabi_fadd
+             72 -> __aeabi_fdiv
+             72 -> __aeabi_fmul
+             72 -> __aeabi_fsub
+             72 -> __aeabi_i2d
+             72 -> __aeabi_i2f
+             72 -> __aeabi_ui2d
+             72 -> __aeabi_ui2f
+             72 -> abs
+             72 -> atan2
+             72 -> cos
+             72 -> ftm0_pwm_change_duty
+             72 -> hw_gpio_set
+             72 -> log
+             72 -> set_pwm
+             72 -> sin
+             72 -> sqrt
+             72 -> writeDataToMemory
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  BASE_VALUE
+       1  K
+       4  Kd1
+       4  Kd2
+       4  Kd3
+       4  Kd4
+       4  Kdx
+       4  Kdx1
+       4  Kdy
+       4  Kdy1
+       4  Ki1
+       4  Ki2
+       4  Ki3
+       4  Ki4
+       4  Kix
+       4  Kiy
+       4  Kp1
+       4  Kp2
+       4  Kp3
+       4  Kp4
+       4  Kx
+       4  Kx1
+       4  Ky
+       4  Ky1
+       4  PWM_X
+       4  PWM_Y
+       4  PointX
+       4  PointY
+    5364  Quadrotor_pid
+       4  RE_X
+       4  RE_Y
+       4  TEST1
+       4  TEST2
+       4  TEST3
+       4  W_Axis_1
+       4  W_Axis_2
+       4  W_Axis_3
+       4  W_Axis_4
+       1  _flag_
+       1  camflag
+       4  count
+       4  cx
+       4  cy
+       4  cz
+       4  dataLencounter
+       4  des_PointX
+       4  des_PointY
+       4  des_high
+       4  des_pitch
+       4  des_roll
+       4  des_x
+       4  des_y
+       4  des_yaw
+       4  dot_targetx
+       4  dot_targety
+       4  errX
+       4  errY
+       4  err_angX
+       4  err_angY
+       1  high_f
+       4  image_distance
+       4  k_high
+       4  kvx
+       4  kvy
+       4  lastErrX
+       4  lastErrY
+       4  lastHeight
+       4  last_dotx
+       4  last_doty
+       4  last_w1
+       4  last_w2
+       4  last_w3
+       4  last_w4
+       4  lastdotErrX
+       4  lastdotErrY
+       4  preHeight
+       4  prePointX
+       4  prePointY
+       4  pre_err_angX
+       4  pre_err_angY
+       4  pre_err_high
+       4  pre_err_pitch
+       4  pre_err_roll
+       4  pre_err_yaw
+       4  preposx
+       4  preposy
+       4  px
+       4  py
+       4  pz
+       4  revise_X
+       4  revise_Y
+       4  sendcount
+       1  steerFlag
+       8  sumErrX
+       8  sumErrY
+       8  sum_axisx
+       8  sum_axisy
+       8  sum_err_high
+       8  sum_err_pitch
+       8  sum_err_roll
+       8  sum_err_yaw
+       4  sx
+       4  sy
+       4  sz
+       4  target_x
+       4  target_y
+       4  theta
+       4  w1
+       4  w2
+       4  w3
+       4  w4
+   24000  wx
+   24000  wy
+   24000  wz
+
+ 
+ 72 316 bytes in section .bss
+    139 bytes in section .data
+  5 364 bytes in section .text
+ 
+  5 364 bytes of CODE memory
+ 72 455 bytes of DATA memory
+
+Errors: none
+Warnings: 12

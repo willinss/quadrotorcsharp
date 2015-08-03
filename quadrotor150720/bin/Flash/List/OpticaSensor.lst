@@ -1,0 +1,600 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     03/Aug/2015  09:48:05 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\src\Sources\C\Component_C\OpticaSensor.c          #
+#    Command line =  "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\C\Component_C\OpticaSensor.c" -D     #
+#                    IAR -D TWR_K60N512 -lCN "C:\Users\Thinkpad\Desktop\quadr #
+#                    otor150720飞行器跟随小车(改I2C)\bin\Flash\List\" -lB     #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\List\" -o                              #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\" --no_cse --no_unroll             #
+#                    --no_inline --no_code_motion --no_tbaa --no_clustering   #
+#                    --no_scheduling --debug --endian=little --cpu=Cortex-M4  #
+#                    -e --fpu=None --dlib_config "E:\Program Files\IAR        #
+#                    Systems\Embedded Workbench 6.4\arm\INC\c\DLib_Config_Nor #
+#                    mal.h" -I "C:\Users\Thinkpad\Desktop\quadrotor150720飞行 #
+#                    器跟随小车(改I2C)\src\Sources\H\" -I                     #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\H\Component_H\" -I                   #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\H\Frame_H\" -Ol --use_c++_inline     #
+#    List file    =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\List\OpticaSensor.lst                   #
+#    Object file  =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\Obj\OpticaSensor.o                      #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车(改I2C)\src\Sources\C\Component_C\OpticaSensor.c
+      1          #include"OpticalSensor.h"
+      2          
+      3          #define SOUT_0  hw_gpio_set(PORT_E, 3, 0)
+      4          #define SOUT_1  hw_gpio_set(PORT_E, 3, 1)
+      5          
+      6          #define SCLK_0  hw_gpio_set(PORT_E, 1, 0)
+      7          #define SCLK_1  hw_gpio_set(PORT_E, 1, 1)
+      8          
+      9          #define SIN     hw_gpio_get(PORT_D, 3)
+     10          
+     11          
+     12          #define NCS_0  hw_gpio_set(PORT_D, 2, 0)
+     13          #define NCS_1  hw_gpio_set(PORT_D, 2, 1)
+     14          
+
+   \                                 In section .text, align 2, keep-with-next
+     15          void AnalogSPI(void)
+     16          {
+   \                     AnalogSPI:
+   \   00000000   0xB580             PUSH     {R7,LR}
+     17              hw_gpio_init(PORT_E, 3, 1, 1);       //PTE1 SOUT
+   \   00000002   0x2301             MOVS     R3,#+1
+   \   00000004   0x2201             MOVS     R2,#+1
+   \   00000006   0x2103             MOVS     R1,#+3
+   \   00000008   0x2004             MOVS     R0,#+4
+   \   0000000A   0x.... 0x....      BL       hw_gpio_init
+     18              hw_gpio_init(PORT_E, 1, 1, 1);       //PTE2  SCLK
+   \   0000000E   0x2301             MOVS     R3,#+1
+   \   00000010   0x2201             MOVS     R2,#+1
+   \   00000012   0x2101             MOVS     R1,#+1
+   \   00000014   0x2004             MOVS     R0,#+4
+   \   00000016   0x.... 0x....      BL       hw_gpio_init
+     19              hw_gpio_init(PORT_D, 3, 0, 1);       //PTE3  SIN
+   \   0000001A   0x2301             MOVS     R3,#+1
+   \   0000001C   0x2200             MOVS     R2,#+0
+   \   0000001E   0x2103             MOVS     R1,#+3
+   \   00000020   0x2003             MOVS     R0,#+3
+   \   00000022   0x.... 0x....      BL       hw_gpio_init
+     20              hw_gpio_init(PORT_D, 2, 1, 1) ;      //PTE4   NCS
+   \   00000026   0x2301             MOVS     R3,#+1
+   \   00000028   0x2201             MOVS     R2,#+1
+   \   0000002A   0x2102             MOVS     R1,#+2
+   \   0000002C   0x2003             MOVS     R0,#+3
+   \   0000002E   0x.... 0x....      BL       hw_gpio_init
+     21          }
+   \   00000032   0xBD01             POP      {R0,PC}          ;; return
+
+   \                                 In section .text, align 2, keep-with-next
+     22          void Sensor_Start(void)
+     23          {
+   \                     Sensor_Start:
+   \   00000000   0xB580             PUSH     {R7,LR}
+     24              SCLK_1;
+   \   00000002   0x2201             MOVS     R2,#+1
+   \   00000004   0x2101             MOVS     R1,#+1
+   \   00000006   0x2004             MOVS     R0,#+4
+   \   00000008   0x.... 0x....      BL       hw_gpio_set
+     25              NCS_0;
+   \   0000000C   0x2200             MOVS     R2,#+0
+   \   0000000E   0x2102             MOVS     R1,#+2
+   \   00000010   0x2003             MOVS     R0,#+3
+   \   00000012   0x.... 0x....      BL       hw_gpio_set
+     26          }
+   \   00000016   0xBD01             POP      {R0,PC}          ;; return
+
+   \                                 In section .text, align 2, keep-with-next
+     27          void Sensor_End(void)
+     28          {
+   \                     Sensor_End:
+   \   00000000   0xB580             PUSH     {R7,LR}
+     29              NCS_1;//关闭总线
+   \   00000002   0x2201             MOVS     R2,#+1
+   \   00000004   0x2102             MOVS     R1,#+2
+   \   00000006   0x2003             MOVS     R0,#+3
+   \   00000008   0x.... 0x....      BL       hw_gpio_set
+     30          }
+   \   0000000C   0xBD01             POP      {R0,PC}          ;; return
+     31          
+     32          
+
+   \                                 In section .text, align 4, keep-with-next
+     33          void Write_Address(uint8 addr, uint8 option)
+     34          {
+   \                     Write_Address:
+   \   00000000   0xB570             PUSH     {R4-R6,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+     35              uint8 i, k;
+     36              if(option == Write)addr |= 0x80;
+   \   00000004   0xB2C9             UXTB     R1,R1            ;; ZeroExt  R1,R1,#+24,#+24
+   \   00000006   0x2900             CMP      R1,#+0
+   \   00000008   0xD101             BNE.N    ??Write_Address_0
+   \   0000000A   0xF054 0x0480      ORRS     R4,R4,#0x80
+     37              Sensor_Start();
+   \                     ??Write_Address_0:
+   \   0000000E   0x.... 0x....      BL       Sensor_Start
+     38              k = 0x80; //从高位地址开始传送
+   \   00000012   0x2680             MOVS     R6,#+128
+     39              for(i = 0; i < 8; i++)
+   \   00000014   0x2500             MOVS     R5,#+0
+   \   00000016   0xE012             B.N      ??Write_Address_1
+     40              {
+     41                  SCLK_0;
+     42                  if(addr & k)    SOUT_1;
+     43                  else    SOUT_0;
+   \                     ??Write_Address_2:
+   \   00000018   0x2200             MOVS     R2,#+0
+   \   0000001A   0x2103             MOVS     R1,#+3
+   \   0000001C   0x2004             MOVS     R0,#+4
+   \   0000001E   0x.... 0x....      BL       hw_gpio_set
+     44                  asm("nop");
+   \                     ??Write_Address_3:
+   \   00000022   0xBF00             nop
+     45                  asm("nop");
+   \   00000024   0xBF00             nop
+     46                  asm("nop");
+   \   00000026   0xBF00             nop
+     47                  SCLK_1;
+   \   00000028   0x2201             MOVS     R2,#+1
+   \   0000002A   0x2101             MOVS     R1,#+1
+   \   0000002C   0x2004             MOVS     R0,#+4
+   \   0000002E   0x.... 0x....      BL       hw_gpio_set
+     48                  k >>= 1;
+   \   00000032   0xB2F6             UXTB     R6,R6            ;; ZeroExt  R6,R6,#+24,#+24
+   \   00000034   0x0876             LSRS     R6,R6,#+1
+     49                  asm("nop");
+   \   00000036   0xBF00             nop
+     50                  asm("nop");
+   \   00000038   0xBF00             nop
+     51                  asm("nop");
+   \   0000003A   0xBF00             nop
+   \   0000003C   0x1C6D             ADDS     R5,R5,#+1
+   \                     ??Write_Address_1:
+   \   0000003E   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   00000040   0x2D08             CMP      R5,#+8
+   \   00000042   0xD20E             BCS.N    ??Write_Address_4
+   \   00000044   0x2200             MOVS     R2,#+0
+   \   00000046   0x2101             MOVS     R1,#+1
+   \   00000048   0x2004             MOVS     R0,#+4
+   \   0000004A   0x.... 0x....      BL       hw_gpio_set
+   \   0000004E   0x0020             MOVS     R0,R4
+   \   00000050   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000052   0x4230             TST      R0,R6
+   \   00000054   0xD0E0             BEQ.N    ??Write_Address_2
+   \   00000056   0x2201             MOVS     R2,#+1
+   \   00000058   0x2103             MOVS     R1,#+3
+   \   0000005A   0x2004             MOVS     R0,#+4
+   \   0000005C   0x.... 0x....      BL       hw_gpio_set
+   \   00000060   0xE7DF             B.N      ??Write_Address_3
+     52              }
+     53          }
+   \                     ??Write_Address_4:
+   \   00000062   0xBD70             POP      {R4-R6,PC}       ;; return
+     54          
+     55          
+
+   \                                 In section .text, align 4, keep-with-next
+     56          void Write_Data(uint8 temp)
+     57          {
+   \                     Write_Data:
+   \   00000000   0xB570             PUSH     {R4-R6,LR}
+   \   00000002   0x0004             MOVS     R4,R0
+     58              uint8 i, k;
+     59              k = 0x80; //从高位地址开始传送
+   \   00000004   0x2680             MOVS     R6,#+128
+     60              for(i = 0; i < 8; i++)
+   \   00000006   0x2500             MOVS     R5,#+0
+   \   00000008   0xE012             B.N      ??Write_Data_0
+     61              {
+     62                  SCLK_0;
+     63                  if(temp & k)    SOUT_1;
+     64                  else    SOUT_0;
+   \                     ??Write_Data_1:
+   \   0000000A   0x2200             MOVS     R2,#+0
+   \   0000000C   0x2103             MOVS     R1,#+3
+   \   0000000E   0x2004             MOVS     R0,#+4
+   \   00000010   0x.... 0x....      BL       hw_gpio_set
+     65                  asm("nop");
+   \                     ??Write_Data_2:
+   \   00000014   0xBF00             nop
+     66                  asm("nop");
+   \   00000016   0xBF00             nop
+     67                  asm("nop");
+   \   00000018   0xBF00             nop
+     68                  SCLK_1;
+   \   0000001A   0x2201             MOVS     R2,#+1
+   \   0000001C   0x2101             MOVS     R1,#+1
+   \   0000001E   0x2004             MOVS     R0,#+4
+   \   00000020   0x.... 0x....      BL       hw_gpio_set
+     69                  k >>= 1;
+   \   00000024   0xB2F6             UXTB     R6,R6            ;; ZeroExt  R6,R6,#+24,#+24
+   \   00000026   0x0876             LSRS     R6,R6,#+1
+     70                  asm("nop");
+   \   00000028   0xBF00             nop
+     71                  asm("nop");
+   \   0000002A   0xBF00             nop
+     72                  asm("nop");
+   \   0000002C   0xBF00             nop
+   \   0000002E   0x1C6D             ADDS     R5,R5,#+1
+   \                     ??Write_Data_0:
+   \   00000030   0xB2ED             UXTB     R5,R5            ;; ZeroExt  R5,R5,#+24,#+24
+   \   00000032   0x2D08             CMP      R5,#+8
+   \   00000034   0xD20E             BCS.N    ??Write_Data_3
+   \   00000036   0x2200             MOVS     R2,#+0
+   \   00000038   0x2101             MOVS     R1,#+1
+   \   0000003A   0x2004             MOVS     R0,#+4
+   \   0000003C   0x.... 0x....      BL       hw_gpio_set
+   \   00000040   0x0020             MOVS     R0,R4
+   \   00000042   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000044   0x4230             TST      R0,R6
+   \   00000046   0xD0E0             BEQ.N    ??Write_Data_1
+   \   00000048   0x2201             MOVS     R2,#+1
+   \   0000004A   0x2103             MOVS     R1,#+3
+   \   0000004C   0x2004             MOVS     R0,#+4
+   \   0000004E   0x.... 0x....      BL       hw_gpio_set
+   \   00000052   0xE7DF             B.N      ??Write_Data_2
+     73              }
+     74          
+     75              Delay_ms(0.06);       //延时60us以上确保写操作完成
+   \                     ??Write_Data_3:
+   \   00000054   0x....             LDR.N    R0,??DataTable3  ;; 0x3d75c28f
+   \   00000056   0x.... 0x....      BL       Delay_ms
+     76              Sensor_End();
+   \   0000005A   0x.... 0x....      BL       Sensor_End
+     77          }
+   \   0000005E   0xBD70             POP      {R4-R6,PC}       ;; return
+     78          
+
+   \                                 In section .text, align 4, keep-with-next
+     79          uint8 Read_Sensor_Byte(void)
+     80          {
+   \                     Read_Sensor_Byte:
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+     81              uint8 i, dat;
+     82              for(i = 0; i < 8; i++)
+   \   00000002   0x2400             MOVS     R4,#+0
+   \   00000004   0xE018             B.N      ??Read_Sensor_Byte_0
+     83              {
+     84                  SCLK_0;
+   \                     ??Read_Sensor_Byte_1:
+   \   00000006   0x2200             MOVS     R2,#+0
+   \   00000008   0x2101             MOVS     R1,#+1
+   \   0000000A   0x2004             MOVS     R0,#+4
+   \   0000000C   0x.... 0x....      BL       hw_gpio_set
+     85                  dat <<= 1;
+   \   00000010   0x006D             LSLS     R5,R5,#+1
+     86                  asm("nop");
+   \   00000012   0xBF00             nop
+     87                  asm("nop");
+   \   00000014   0xBF00             nop
+     88                  asm("nop");
+   \   00000016   0xBF00             nop
+     89                  SCLK_1;
+   \   00000018   0x2201             MOVS     R2,#+1
+   \   0000001A   0x2101             MOVS     R1,#+1
+   \   0000001C   0x2004             MOVS     R0,#+4
+   \   0000001E   0x.... 0x....      BL       hw_gpio_set
+     90                  if(SIN) dat++;     //先读高位数据
+   \   00000022   0x2103             MOVS     R1,#+3
+   \   00000024   0x2003             MOVS     R0,#+3
+   \   00000026   0x.... 0x....      BL       hw_gpio_get
+   \   0000002A   0x2800             CMP      R0,#+0
+   \   0000002C   0xD000             BEQ.N    ??Read_Sensor_Byte_2
+   \   0000002E   0x1C6D             ADDS     R5,R5,#+1
+     91                  asm("nop");
+   \                     ??Read_Sensor_Byte_2:
+   \   00000030   0xBF00             nop
+     92                  asm("nop");
+   \   00000032   0xBF00             nop
+     93                  asm("nop");
+   \   00000034   0xBF00             nop
+     94              }
+   \   00000036   0x1C64             ADDS     R4,R4,#+1
+   \                     ??Read_Sensor_Byte_0:
+   \   00000038   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   0000003A   0x2C08             CMP      R4,#+8
+   \   0000003C   0xD3E3             BCC.N    ??Read_Sensor_Byte_1
+     95              Sensor_End();
+   \   0000003E   0x.... 0x....      BL       Sensor_End
+     96              return(dat);
+   \   00000042   0x0028             MOVS     R0,R5
+   \   00000044   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000046   0xBD32             POP      {R1,R4,R5,PC}    ;; return
+     97          }
+
+   \                                 In section .text, align 2, keep-with-next
+     98          void reset(void)
+     99          {
+   \                     reset:
+   \   00000000   0xB580             PUSH     {R7,LR}
+    100              hw_gpio_set(PORT_A, 17, 1);
+   \   00000002   0x2201             MOVS     R2,#+1
+   \   00000004   0x2111             MOVS     R1,#+17
+   \   00000006   0x2000             MOVS     R0,#+0
+   \   00000008   0x.... 0x....      BL       hw_gpio_set
+    101              Delay_ms(1);
+   \   0000000C   0xF05F 0x507E      MOVS     R0,#+1065353216
+   \   00000010   0x.... 0x....      BL       Delay_ms
+    102              hw_gpio_set(PORT_A, 17, 0);
+   \   00000014   0x2200             MOVS     R2,#+0
+   \   00000016   0x2111             MOVS     R1,#+17
+   \   00000018   0x2000             MOVS     R0,#+0
+   \   0000001A   0x.... 0x....      BL       hw_gpio_set
+    103          }
+   \   0000001E   0xBD01             POP      {R0,PC}          ;; return
+    104          
+
+   \                                 In section .text, align 2, keep-with-next
+    105          uint8 ReadByte(uint8 Addr)
+    106          {
+   \                     ReadByte:
+   \   00000000   0xB580             PUSH     {R7,LR}
+    107              uint8 dat;
+    108              Write_Address(Addr, Read);
+   \   00000002   0x2101             MOVS     R1,#+1
+   \   00000004   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000006   0x.... 0x....      BL       Write_Address
+    109              Delay_ms(0.08);
+   \   0000000A   0x....             LDR.N    R0,??DataTable3_1  ;; 0x3da3d70a
+   \   0000000C   0x.... 0x....      BL       Delay_ms
+    110              dat = Read_Sensor_Byte();
+   \   00000010   0x.... 0x....      BL       Read_Sensor_Byte
+    111              return dat;
+   \   00000014   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000016   0xBD02             POP      {R1,PC}          ;; return
+    112          }
+    113          
+
+   \                                 In section .text, align 2, keep-with-next
+    114          void WriteByte(uint8 Addr, uint8 Dat)
+    115          {
+   \                     WriteByte:
+   \   00000000   0xB510             PUSH     {R4,LR}
+   \   00000002   0x000C             MOVS     R4,R1
+    116              Write_Address(Addr, Write);
+   \   00000004   0x2100             MOVS     R1,#+0
+   \   00000006   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000008   0x.... 0x....      BL       Write_Address
+    117              Delay_ms(0.08);
+   \   0000000C   0x....             LDR.N    R0,??DataTable3_1  ;; 0x3da3d70a
+   \   0000000E   0x.... 0x....      BL       Delay_ms
+    118              Write_Data(Dat);
+   \   00000012   0x0020             MOVS     R0,R4
+   \   00000014   0xB2C0             UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   00000016   0x.... 0x....      BL       Write_Data
+    119          }
+   \   0000001A   0xBD10             POP      {R4,PC}          ;; return
+
+   \                                 In section .bss, align 4
+    120           uint8 data[30][30];
+   \                     `data`:
+   \   00000000                      DS8 900
+
+   \                                 In section .text, align 2, keep-with-next
+    121          void print_pixel_data()
+    122          {
+   \                     print_pixel_data:
+   \   00000000   0xB570             PUSH     {R4-R6,LR}
+    123              int16 i,j;
+    124              //bool isFirstPixel = true;
+    125              uint8 regValue;
+    126              uint8 pixelValue;
+    127              
+    128              // write to frame capture register to force capture of frame
+    129              WriteByte(ADNS3080_FRAME_CAPTURE,0x83);
+   \   00000002   0x2183             MOVS     R1,#+131
+   \   00000004   0x2013             MOVS     R0,#+19
+   \   00000006   0x.... 0x....      BL       WriteByte
+    130          
+    131              // wait 3 frame periods + 10 nanoseconds for frame to be captured
+    132              // min frame speed is 2000 frames/second so 1 frame = 500 nano seconds.
+    133              // so 500 x 3 + 10 = 1510
+    134              Delay_ms(2);
+   \   0000000A   0xF05F 0x4080      MOVS     R0,#+1073741824
+   \   0000000E   0x.... 0x....      BL       Delay_ms
+    135          
+    136              // display the pixel data
+    137              for( i=0; i<ADNS3080_PIXELS_Y; i++ ) {
+   \   00000012   0x2400             MOVS     R4,#+0
+   \   00000014   0xE018             B.N      ??print_pixel_data_0
+    138                  for( j=0; j<ADNS3080_PIXELS_X; j++ ) {
+    139                    //  regValue = read_register(ADNS3080_FRAME_CAPTURE);
+    140                   data[i][j] =   ReadByte(ADNS3080_FRAME_CAPTURE);
+   \                     ??print_pixel_data_1:
+   \   00000016   0xB22D             SXTH     R5,R5            ;; SignExt  R5,R5,#+16,#+16
+   \   00000018   0x201E             MOVS     R0,#+30
+   \   0000001A   0x....             LDR.N    R1,??DataTable3_2
+   \   0000001C   0xFB14 0x1600      SMLABB   R6,R4,R0,R1
+   \   00000020   0x2013             MOVS     R0,#+19
+   \   00000022   0x.... 0x....      BL       ReadByte
+   \   00000026   0x55A8             STRB     R0,[R5, R6]
+    141                  regValue =  data[i][j];
+   \   00000028   0xB22D             SXTH     R5,R5            ;; SignExt  R5,R5,#+16,#+16
+   \   0000002A   0x201E             MOVS     R0,#+30
+   \   0000002C   0x....             LDR.N    R1,??DataTable3_2
+   \   0000002E   0xFB14 0x1000      SMLABB   R0,R4,R0,R1
+   \   00000032   0x5C28             LDRB     R0,[R5, R0]
+    142                   pixelValue = ( regValue << 2 );
+   \   00000034   0x0081             LSLS     R1,R0,#+2
+    143                   uart_send1(UART0,pixelValue);
+   \   00000036   0xB2C9             UXTB     R1,R1            ;; ZeroExt  R1,R1,#+24,#+24
+   \   00000038   0x....             LDR.N    R0,??DataTable3_3  ;; 0x4006a000
+   \   0000003A   0x.... 0x....      BL       uart_send1
+    144                  }
+   \   0000003E   0x1C6D             ADDS     R5,R5,#+1
+   \                     ??print_pixel_data_2:
+   \   00000040   0xB22D             SXTH     R5,R5            ;; SignExt  R5,R5,#+16,#+16
+   \   00000042   0x2D1E             CMP      R5,#+30
+   \   00000044   0xDBE7             BLT.N    ??print_pixel_data_1
+   \   00000046   0x1C64             ADDS     R4,R4,#+1
+   \                     ??print_pixel_data_0:
+   \   00000048   0xB224             SXTH     R4,R4            ;; SignExt  R4,R4,#+16,#+16
+   \   0000004A   0x2C1E             CMP      R4,#+30
+   \   0000004C   0xDA01             BGE.N    ??print_pixel_data_3
+   \   0000004E   0x2500             MOVS     R5,#+0
+   \   00000050   0xE7F6             B.N      ??print_pixel_data_2
+    145          
+    146              }
+    147          
+    148              // hardware reset to restore sensor to normal operation
+    149              reset();
+   \                     ??print_pixel_data_3:
+   \   00000052   0x.... 0x....      BL       reset
+    150          }
+   \   00000056   0xBD70             POP      {R4-R6,PC}       ;; return
+    151          
+
+   \                                 In section .text, align 2, keep-with-next
+    152          uint8 InitOpticalFlowSensor(void)
+    153          {
+   \                     InitOpticalFlowSensor:
+   \   00000000   0xB538             PUSH     {R3-R5,LR}
+    154            uint8 Id = 0;
+   \   00000002   0x2400             MOVS     R4,#+0
+    155            uint8 TEMP = 0;
+   \   00000004   0x2500             MOVS     R5,#+0
+    156            Id = ReadByte(0x00);
+   \   00000006   0x2000             MOVS     R0,#+0
+   \   00000008   0x.... 0x....      BL       ReadByte
+   \   0000000C   0x0004             MOVS     R4,R0
+    157            if(Id == 0x17)
+   \   0000000E   0xB2E4             UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000010   0x2C17             CMP      R4,#+23
+   \   00000012   0xD114             BNE.N    ??InitOpticalFlowSensor_0
+    158            {
+    159              TEMP = ReadByte(0x0A);
+   \   00000014   0x200A             MOVS     R0,#+10
+   \   00000016   0x.... 0x....      BL       ReadByte
+   \   0000001A   0x0005             MOVS     R5,R0
+    160              TEMP |= 0X10;
+   \   0000001C   0xF055 0x0510      ORRS     R5,R5,#0x10
+    161              WriteByte(0x0A,TEMP);
+   \   00000020   0x0029             MOVS     R1,R5
+   \   00000022   0xB2C9             UXTB     R1,R1            ;; ZeroExt  R1,R1,#+24,#+24
+   \   00000024   0x200A             MOVS     R0,#+10
+   \   00000026   0x.... 0x....      BL       WriteByte
+    162              Delay_ms(1);
+   \   0000002A   0xF05F 0x507E      MOVS     R0,#+1065353216
+   \   0000002E   0x.... 0x....      BL       Delay_ms
+    163              WriteByte(0x12,0x00); //Motion clear
+   \   00000032   0x2100             MOVS     R1,#+0
+   \   00000034   0x2012             MOVS     R0,#+18
+   \   00000036   0x.... 0x....      BL       WriteByte
+    164              return 1;
+   \   0000003A   0x2001             MOVS     R0,#+1
+   \   0000003C   0xE000             B.N      ??InitOpticalFlowSensor_1
+    165            }
+    166            else return 0;
+   \                     ??InitOpticalFlowSensor_0:
+   \   0000003E   0x2000             MOVS     R0,#+0
+   \                     ??InitOpticalFlowSensor_1:
+   \   00000040   0xBD32             POP      {R1,R4,R5,PC}    ;; return
+    167          
+    168          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3:
+   \   00000000   0x3D75C28F         DC32     0x3d75c28f
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3_1:
+   \   00000000   0x3DA3D70A         DC32     0x3da3d70a
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3_2:
+   \   00000000   0x........         DC32     `data`
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3_3:
+   \   00000000   0x4006A000         DC32     0x4006a000
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+        8  AnalogSPI
+              8 -> hw_gpio_init
+       16  InitOpticalFlowSensor
+             16 -> Delay_ms
+             16 -> ReadByte
+             16 -> WriteByte
+        8  ReadByte
+              8 -> Delay_ms
+              8 -> Read_Sensor_Byte
+              8 -> Write_Address
+       16  Read_Sensor_Byte
+             16 -> Sensor_End
+             16 -> hw_gpio_get
+             16 -> hw_gpio_set
+        8  Sensor_End
+              8 -> hw_gpio_set
+        8  Sensor_Start
+              8 -> hw_gpio_set
+        8  WriteByte
+              8 -> Delay_ms
+              8 -> Write_Address
+              8 -> Write_Data
+       16  Write_Address
+             16 -> Sensor_Start
+             16 -> hw_gpio_set
+       16  Write_Data
+             16 -> Delay_ms
+             16 -> Sensor_End
+             16 -> hw_gpio_set
+       16  print_pixel_data
+             16 -> Delay_ms
+             16 -> ReadByte
+             16 -> WriteByte
+             16 -> reset
+             16 -> uart_send1
+        8  reset
+              8 -> Delay_ms
+              8 -> hw_gpio_set
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable3
+       4  ??DataTable3_1
+       4  ??DataTable3_2
+       4  ??DataTable3_3
+      52  AnalogSPI
+      66  InitOpticalFlowSensor
+      24  ReadByte
+      72  Read_Sensor_Byte
+      14  Sensor_End
+      24  Sensor_Start
+      28  WriteByte
+     100  Write_Address
+      96  Write_Data
+     900  data
+      88  print_pixel_data
+      32  reset
+
+ 
+ 900 bytes in section .bss
+ 612 bytes in section .text
+ 
+ 612 bytes of CODE memory
+ 900 bytes of DATA memory
+
+Errors: none
+Warnings: none

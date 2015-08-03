@@ -1,0 +1,878 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.10.1.52143/W32 for ARM     28/Apr/2012  19:46:15 #
+# Copyright 1999-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  C:\Documents and Settings\Administrator\iar\Myproject\42 #
+#                    8IIC\src\Sources\C\Component_C\hw_i2c.c                  #
+#    Command line =  "C:\Documents and Settings\Administrator\iar\Myproject\4 #
+#                    28IIC\src\Sources\C\Component_C\hw_i2c.c" -D IAR -D      #
+#                    TWR_K60N512 -lCN "C:\Documents and                       #
+#                    Settings\Administrator\iar\Myproject\428IIC\bin\Ram\List #
+#                    \" -lB "C:\Documents and Settings\Administrator\iar\Mypr #
+#                    oject\428IIC\bin\Ram\List\" -o "C:\Documents and         #
+#                    Settings\Administrator\iar\Myproject\428IIC\bin\Ram\Obj\ #
+#                    " --no_cse --no_unroll --no_inline --no_code_motion      #
+#                    --no_tbaa --no_clustering --no_scheduling --debug        #
+#                    --endian=little --cpu=Cortex-M4 -e --fpu=None            #
+#                    --dlib_config "D:\IAR Systems\Embedded Workbench         #
+#                    6.0\arm\INC\c\DLib_Config_Normal.h" -I "C:\Documents     #
+#                    and Settings\Administrator\iar\Myproject\428IIC\src\Sour #
+#                    ces\H\" -I "C:\Documents and                             #
+#                    Settings\Administrator\iar\Myproject\428IIC\src\Sources\ #
+#                    H\Component_H\" -I "C:\Documents and                     #
+#                    Settings\Administrator\iar\Myproject\428IIC\src\Sources\ #
+#                    H\Frame_H\" -Ol --use_c++_inline                         #
+#    List file    =  C:\Documents and Settings\Administrator\iar\Myproject\42 #
+#                    8IIC\bin\Ram\List\hw_i2c.lst                             #
+#    Object file  =  C:\Documents and Settings\Administrator\iar\Myproject\42 #
+#                    8IIC\bin\Ram\Obj\hw_i2c.o                                #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+C:\Documents and Settings\Administrator\iar\Myproject\428IIC\src\Sources\C\Component_C\hw_i2c.c
+      1          //============================================================================
+      2          //文件名称：hw_i2c.h  
+      3          //功能概要：uart构件头文件
+      4          //版权所有：苏州大学飞思卡尔嵌入式中心(sumcu.suda.edu.cn)
+      5          //版本更新：2011-11-17     V1.0       stone    编写了K60的i2c驱动
+      6          //============================================================================
+      7          
+      8          #ifndef __I2C_H__
+      9          #define __I2C_H__
+     10          	
+     11          #include "common.h"
+     12          #include "hw_i2c.h"
+     13          
+     14          
+     15          //============================================================================
+     16          //函数名称：hw_i2c_init                                                        
+     17          //功能概要：初始化IICX模块。                                                
+     18          //参数说明：MoudleNum:模块号                                                         
+     19          //函数返回：无                                                                  
+     20          //============================================================================
+
+   \                                 In section .text, align 2, keep-with-next
+     21          void hw_i2c_init(int MoudleNum)
+     22          {
+   \                     hw_i2c_init:
+   \   00000000   80B5               PUSH     {R7,LR}
+     23          	//获取i2c模块基址
+     24          	I2C_MemMapPtr num = hw_i2c_get_base_address(MoudleNum);
+   \   00000002   ........           BL       hw_i2c_get_base_address
+     25          	
+     26          	if(num == I2C0)
+   \   00000006   ........           LDR.W    R1,??DataTable2  ;; 0x40066000
+   \   0000000A   8842               CMP      R0,R1
+   \   0000000C   1AD1               BNE.N    ??hw_i2c_init_0
+     27          	{
+     28          		//打开I2C0模块时钟
+     29          		SIM_SCGC4 |= SIM_SCGC4_I2C0_MASK; 
+   \   0000000E   ........           LDR.W    R0,??DataTable2_1  ;; 0x40048034
+   \   00000012   0068               LDR      R0,[R0, #+0]
+   \   00000014   50F04000           ORRS     R0,R0,#0x40
+   \   00000018   ........           LDR.W    R1,??DataTable2_1  ;; 0x40048034
+   \   0000001C   0860               STR      R0,[R1, #+0]
+     30          		//配置引脚复用为I2C0功能
+     31          		//I2C0 SCL使用PTD8
+     32          		//I2C0 SDA使用PTD9
+     33          		PORTB_PCR0 = PORT_PCR_MUX(2);
+   \   0000001E   ........           LDR.W    R0,??DataTable2_2  ;; 0x4004a000
+   \   00000022   4FF40071           MOV      R1,#+512
+   \   00000026   0160               STR      R1,[R0, #+0]
+     34          		PORTB_PCR1 = PORT_PCR_MUX(2);
+   \   00000028   ........           LDR.W    R0,??DataTable2_3  ;; 0x4004a004
+   \   0000002C   4FF40071           MOV      R1,#+512
+   \   00000030   0160               STR      R1,[R0, #+0]
+     35          		//设置 MULT 和 ICR   
+     36          		//芯片手册推荐设置100K以减小MCU负载
+     37          		//k60的MCU总线频率为48M，在总线上分频
+     38          		I2C0_F  = 0x65;   
+   \   00000032   ........           LDR.W    R0,??DataTable2_4  ;; 0x40066001
+   \   00000036   6521               MOVS     R1,#+101
+   \   00000038   0170               STRB     R1,[R0, #+0]
+     39          		//使能I2C0，不发送应答信号
+     40          		I2C0_C1 = I2C_C1_IICEN_MASK | I2C_C1_TXAK_MASK;      
+   \   0000003A   ........           LDR.W    R0,??DataTable2_5  ;; 0x40066002
+   \   0000003E   8821               MOVS     R1,#+136
+   \   00000040   0170               STRB     R1,[R0, #+0]
+   \   00000042   16E0               B.N      ??hw_i2c_init_1
+     41          	}
+     42          	else
+     43          	{
+     44          		//打开I2C1模块时钟
+     45          		SIM_SCGC4 |= SIM_SCGC4_I2C1_MASK; 
+   \                     ??hw_i2c_init_0:
+   \   00000044   ........           LDR.W    R0,??DataTable2_1  ;; 0x40048034
+   \   00000048   0068               LDR      R0,[R0, #+0]
+   \   0000004A   50F08000           ORRS     R0,R0,#0x80
+   \   0000004E   ....               LDR.N    R1,??DataTable2_1  ;; 0x40048034
+   \   00000050   0860               STR      R0,[R1, #+0]
+     46          		//配置引脚复用为I2C1功能
+     47          		//I2C1 SCL使用PTC10
+     48          		//I2C1 SDA使用PTC11
+     49          		PORTC_PCR10 = PORT_PCR_MUX(2);
+   \   00000052   ........           LDR.W    R0,??DataTable2_6  ;; 0x4004b028
+   \   00000056   4FF40071           MOV      R1,#+512
+   \   0000005A   0160               STR      R1,[R0, #+0]
+     50          		PORTC_PCR11 = PORT_PCR_MUX(2);
+   \   0000005C   ........           LDR.W    R0,??DataTable2_7  ;; 0x4004b02c
+   \   00000060   4FF40071           MOV      R1,#+512
+   \   00000064   0160               STR      R1,[R0, #+0]
+     51          		//设置 MULT 和 ICR   
+     52          		//芯片手册推荐设置100K以减小MCU负载
+     53          		//k60的MCU总线频率为48M，在总线上分频
+     54          		I2C1_F  = 0x65;   
+   \   00000066   ....               LDR.N    R0,??DataTable2_8  ;; 0x40067001
+   \   00000068   6521               MOVS     R1,#+101
+   \   0000006A   0170               STRB     R1,[R0, #+0]
+     55          		//使能I2C1，不发送应答信号
+     56          		I2C1_C1 = I2C_C1_IICEN_MASK | I2C_C1_TXAK_MASK;      
+   \   0000006C   ....               LDR.N    R0,??DataTable2_9  ;; 0x40067002
+   \   0000006E   8821               MOVS     R1,#+136
+   \   00000070   0170               STRB     R1,[R0, #+0]
+     57          	}
+     58          }
+   \                     ??hw_i2c_init_1:
+   \   00000072   01BD               POP      {R0,PC}          ;; return
+     59          
+     60          //============================================================================
+     61          //函数名称：hw_send_signal                                                        
+     62          //功能概要：根据需要产生开始或停止信号   。                                                
+     63          //参数说明：         MoudleNum:模块号       
+     64          //          Signal: 'S'(Start),产生开始信号      'O'(Over),  产生停止信号               
+     65          //函数返回：无                                                                  
+     66          //============================================================================
+
+   \                                 In section .text, align 2, keep-with-next
+     67          void hw_send_signal(uint8 Signal,int MoudleNum)
+     68          {
+   \                     hw_send_signal:
+   \   00000000   10B5               PUSH     {R4,LR}
+   \   00000002   0400               MOVS     R4,R0
+   \   00000004   0800               MOVS     R0,R1
+     69          	//获取i2c模块基址
+     70          	I2C_MemMapPtr num = hw_i2c_get_base_address(MoudleNum);
+   \   00000006   ........           BL       hw_i2c_get_base_address
+     71          	
+     72          	if(num == I2C0)//模块0
+   \   0000000A   ....               LDR.N    R1,??DataTable2  ;; 0x40066000
+   \   0000000C   8842               CMP      R0,R1
+   \   0000000E   13D1               BNE.N    ??hw_send_signal_0
+     73          	{
+     74          		if (Signal == 'S')    
+   \   00000010   E4B2               UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000012   532C               CMP      R4,#+83
+   \   00000014   06D1               BNE.N    ??hw_send_signal_1
+     75          		{
+     76          		  i2c0_Start(); //主机模式选择位MST由0变为1,可以产生开始信号  
+   \   00000016   ....               LDR.N    R0,??DataTable2_5  ;; 0x40066002
+   \   00000018   0078               LDRB     R0,[R0, #+0]
+   \   0000001A   50F02000           ORRS     R0,R0,#0x20
+   \   0000001E   ....               LDR.N    R1,??DataTable2_5  ;; 0x40066002
+   \   00000020   0870               STRB     R0,[R1, #+0]
+   \   00000022   1FE0               B.N      ??hw_send_signal_2
+     77          		}
+     78          		else if (Signal == 'O')
+   \                     ??hw_send_signal_1:
+   \   00000024   E4B2               UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000026   4F2C               CMP      R4,#+79
+   \   00000028   1CD1               BNE.N    ??hw_send_signal_2
+     79          		{
+     80          		  i2c0_Stop();//主机模式选择位MST由1变为0,可以产生停止信号
+   \   0000002A   ....               LDR.N    R0,??DataTable2_5  ;; 0x40066002
+   \   0000002C   0078               LDRB     R0,[R0, #+0]
+   \   0000002E   10F0DF00           ANDS     R0,R0,#0xDF
+   \   00000032   ....               LDR.N    R1,??DataTable2_5  ;; 0x40066002
+   \   00000034   0870               STRB     R0,[R1, #+0]
+   \   00000036   15E0               B.N      ??hw_send_signal_2
+     81          		}
+     82          	}
+     83          	else if(num == I2C1)//模块1
+   \                     ??hw_send_signal_0:
+   \   00000038   ....               LDR.N    R1,??DataTable2_10  ;; 0x40067000
+   \   0000003A   8842               CMP      R0,R1
+   \   0000003C   12D1               BNE.N    ??hw_send_signal_2
+     84          	{
+     85          		if (Signal == 'S')    
+   \   0000003E   E4B2               UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000040   532C               CMP      R4,#+83
+   \   00000042   06D1               BNE.N    ??hw_send_signal_3
+     86          		{
+     87          		  i2c1_Start(); //主机模式选择位MST由0变为1,可以产生开始信号  
+   \   00000044   ....               LDR.N    R0,??DataTable2_9  ;; 0x40067002
+   \   00000046   0078               LDRB     R0,[R0, #+0]
+   \   00000048   50F02000           ORRS     R0,R0,#0x20
+   \   0000004C   ....               LDR.N    R1,??DataTable2_9  ;; 0x40067002
+   \   0000004E   0870               STRB     R0,[R1, #+0]
+   \   00000050   08E0               B.N      ??hw_send_signal_2
+     88          		}
+     89          		else if (Signal == 'O')
+   \                     ??hw_send_signal_3:
+   \   00000052   E4B2               UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000054   4F2C               CMP      R4,#+79
+   \   00000056   05D1               BNE.N    ??hw_send_signal_2
+     90          		{
+     91          		  i2c1_Stop();//主机模式选择位MST由1变为0,可以产生停止信号
+   \   00000058   ....               LDR.N    R0,??DataTable2_9  ;; 0x40067002
+   \   0000005A   0078               LDRB     R0,[R0, #+0]
+   \   0000005C   10F0DF00           ANDS     R0,R0,#0xDF
+   \   00000060   ....               LDR.N    R1,??DataTable2_9  ;; 0x40067002
+   \   00000062   0870               STRB     R0,[R1, #+0]
+     92          		}
+     93          	}
+     94          	        
+     95                                                        
+     96                
+     97          }
+   \                     ??hw_send_signal_2:
+   \   00000064   10BD               POP      {R4,PC}          ;; return
+     98          
+     99          
+    100          
+    101          //============================================================================
+    102          //函数名称：hw_wait                                                        
+    103          //功能概要： 在时限内,循环检测接收应答标志位,或传送完成标志位,判断MCU         
+    104          //          是否接收到应答信号或一个字节是否已在总线上传送完毕                                            
+    105          //参数说明：         MoudleNum:模块号       
+    106          //             x:x = 'A'(Ack),等待应答;x = 'T'(Transmission),等待一个字节        
+    107          //                 数据传输完成                   
+    108          //函数返回：0:收到应答信号或一个字节传送完毕;
+    109          //         1:未收到应答信号或一个 字节没传送完                                                                                                                            
+    110          //============================================================================
+    111          
+
+   \                                 In section .text, align 2, keep-with-next
+    112          uint8 hw_wait(uint8 x,int MoudleNum)
+    113          
+    114          {
+   \                     hw_wait:
+   \   00000000   10B5               PUSH     {R4,LR}
+   \   00000002   0400               MOVS     R4,R0
+   \   00000004   0800               MOVS     R0,R1
+    115              uint16 ErrTime, i;
+    116              I2C_MemMapPtr num = hw_i2c_get_base_address(MoudleNum);
+   \   00000006   ........           BL       hw_i2c_get_base_address
+    117              ErrTime = 255*10;            //定义查询超时时限
+   \   0000000A   40F6F611           MOVW     R1,#+2550
+    118              
+    119              
+    120              //获取i2c模块基址
+    121              
+    122              
+    123          	for (i = 0;i < ErrTime;i++)
+   \   0000000E   0022               MOVS     R2,#+0
+   \   00000010   00E0               B.N      ??hw_wait_0
+   \                     ??hw_wait_1:
+   \   00000012   521C               ADDS     R2,R2,#+1
+   \                     ??hw_wait_0:
+   \   00000014   92B2               UXTH     R2,R2            ;; ZeroExt  R2,R2,#+16,#+16
+   \   00000016   89B2               UXTH     R1,R1            ;; ZeroExt  R1,R1,#+16,#+16
+   \   00000018   8A42               CMP      R2,R1
+   \   0000001A   13D2               BCS.N    ??hw_wait_2
+    124          	{
+    125          		if (x == 'A')           //等待应答信号
+   \   0000001C   E4B2               UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   0000001E   412C               CMP      R4,#+65
+   \   00000020   04D1               BNE.N    ??hw_wait_3
+    126          		{
+    127          			  if(( I2C_S_REG(num)  & I2C_S_RXAK_MASK)==0)
+   \   00000022   C378               LDRB     R3,[R0, #+3]
+   \   00000024   DB07               LSLS     R3,R3,#+31
+   \   00000026   F4D4               BMI.N    ??hw_wait_1
+    128          				 return 0;      //传送完一个字节后,收到了从机的应答信号               
+   \   00000028   0020               MOVS     R0,#+0
+   \   0000002A   11E0               B.N      ??hw_wait_4
+    129          		}
+    130          		else if (x == 'T')      //等待传送完成一个字节信号
+   \                     ??hw_wait_3:
+   \   0000002C   E4B2               UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   0000002E   542C               CMP      R4,#+84
+   \   00000030   EFD1               BNE.N    ??hw_wait_1
+    131          		{
+    132          			if ((I2C_S_REG(num) & I2C_S_IICIF_MASK) != 0)    
+   \   00000032   C378               LDRB     R3,[R0, #+3]
+   \   00000034   9B07               LSLS     R3,R3,#+30
+   \   00000036   ECD5               BPL.N    ??hw_wait_1
+    133          			{
+    134          				(I2C_S_REG(num) |=(0 | I2C_S_IICIF_MASK));  //清IICIF标志位
+   \   00000038   C178               LDRB     R1,[R0, #+3]
+   \   0000003A   51F00201           ORRS     R1,R1,#0x2
+   \   0000003E   C170               STRB     R1,[R0, #+3]
+    135          				return 0;       //成功发送完一个字节
+   \   00000040   0020               MOVS     R0,#+0
+   \   00000042   05E0               B.N      ??hw_wait_4
+    136          			}       
+    137          		}
+    138          	}
+    139          	if (i >= ErrTime)
+   \                     ??hw_wait_2:
+   \   00000044   92B2               UXTH     R2,R2            ;; ZeroExt  R2,R2,#+16,#+16
+   \   00000046   89B2               UXTH     R1,R1            ;; ZeroExt  R1,R1,#+16,#+16
+   \   00000048   8A42               CMP      R2,R1
+   \   0000004A   01D3               BCC.N    ??hw_wait_5
+    140          		return 1;               //超时,没有收到应答信号或发送完一个字节   	
+   \   0000004C   0120               MOVS     R0,#+1
+   \   0000004E   FFE7               B.N      ??hw_wait_4
+    141          }
+   \                     ??hw_wait_5:
+   \                     ??hw_wait_4:
+   \   00000050   10BD               POP      {R4,PC}          ;; return
+    142          
+    143          
+    144          //============================================================================
+    145          //函数名称：hw_iic_read1                                                        
+    146          //功能概要：从从机读1个字节数据                                            
+    147          //参数说明：  MoudleNum:模块号       
+    148          //          DeviceAddr:设备地址    
+    149          //          AccessAddr:访问地址
+    150          //          Data:带回收到的一个字节数据  
+    151          //函数返回：为0,成功读一个字节;为1,读一个字节失败  
+    152          //函数说明: 内部调用 hw_send_signal,hw_wait  
+    153          //============================================================================
+
+   \                                 In section .text, align 2, keep-with-next
+    154          uint8 hw_iic_read1(int MoudleNum,uint8 DeviceAddr, uint8 AccessAddr, uint8 *Data)
+    155          {      
+   \                     hw_iic_read1:
+   \   00000000   2DE9F041           PUSH     {R4-R8,LR}
+   \   00000004   0400               MOVS     R4,R0
+   \   00000006   0D00               MOVS     R5,R1
+   \   00000008   9046               MOV      R8,R2
+   \   0000000A   1E00               MOVS     R6,R3
+    156                
+    157          	//获取i2c模块基址
+    158          	I2C_MemMapPtr num = hw_i2c_get_base_address(MoudleNum);
+   \   0000000C   2000               MOVS     R0,R4
+   \   0000000E   ........           BL       hw_i2c_get_base_address
+   \   00000012   0700               MOVS     R7,R0
+    159          	
+    160          	I2C_C1_REG(num)     |= 0x10;           //TX = 1,MCU设置为发送模式
+   \   00000014   B878               LDRB     R0,[R7, #+2]
+   \   00000016   50F01000           ORRS     R0,R0,#0x10
+   \   0000001A   B870               STRB     R0,[R7, #+2]
+    161          	hw_send_signal('S',MoudleNum);               //发送开始信号 
+   \   0000001C   2100               MOVS     R1,R4
+   \   0000001E   5320               MOVS     R0,#+83
+   \   00000020   ........           BL       hw_send_signal
+    162          	I2C_D_REG(num)  = DeviceAddr & 0xfe;   //发送设备地址,并通知从机接收数据
+   \   00000024   15F0FE00           ANDS     R0,R5,#0xFE
+   \   00000028   3871               STRB     R0,[R7, #+4]
+    163          	 
+    164          	if (hw_wait('T',MoudleNum))                  //等待一个字节数据传送完成  
+   \   0000002A   2100               MOVS     R1,R4
+   \   0000002C   5420               MOVS     R0,#+84
+   \   0000002E   ........           BL       hw_wait
+   \   00000032   0028               CMP      R0,#+0
+   \   00000034   01D0               BEQ.N    ??hw_iic_read1_0
+    165          	{      
+    166          
+    167          		return 1;                         //没有传送成功,读一个字节失败   
+   \   00000036   0120               MOVS     R0,#+1
+   \   00000038   45E0               B.N      ??hw_iic_read1_1
+    168          	}
+    169          	if (hw_wait('A',MoudleNum))                 //等待从机应答信号 
+   \                     ??hw_iic_read1_0:
+   \   0000003A   2100               MOVS     R1,R4
+   \   0000003C   4120               MOVS     R0,#+65
+   \   0000003E   ........           BL       hw_wait
+   \   00000042   0028               CMP      R0,#+0
+   \   00000044   01D0               BEQ.N    ??hw_iic_read1_2
+    170          	{
+    171          
+    172          		return 1;                         //没有等到应答信号,读一个字节失败 
+   \   00000046   0120               MOVS     R0,#+1
+   \   00000048   3DE0               B.N      ??hw_iic_read1_1
+    173          	}
+    174          	I2C_D_REG(num)  = AccessAddr;        //发送访问地址    
+   \                     ??hw_iic_read1_2:
+   \   0000004A   87F80480           STRB     R8,[R7, #+4]
+    175          	if (hw_wait('T',MoudleNum))                //等待一个字节数据传送完成 
+   \   0000004E   2100               MOVS     R1,R4
+   \   00000050   5420               MOVS     R0,#+84
+   \   00000052   ........           BL       hw_wait
+   \   00000056   0028               CMP      R0,#+0
+   \   00000058   01D0               BEQ.N    ??hw_iic_read1_3
+    176          	{
+    177          	 
+    178          		return 1;                        //没有传送成功,读一个字节失败
+   \   0000005A   0120               MOVS     R0,#+1
+   \   0000005C   33E0               B.N      ??hw_iic_read1_1
+    179          	}
+    180          	if (hw_wait('A',MoudleNum))                //等待从机应答信号   
+   \                     ??hw_iic_read1_3:
+   \   0000005E   2100               MOVS     R1,R4
+   \   00000060   4120               MOVS     R0,#+65
+   \   00000062   ........           BL       hw_wait
+   \   00000066   0028               CMP      R0,#+0
+   \   00000068   01D0               BEQ.N    ??hw_iic_read1_4
+    181          	{
+    182          	  
+    183          		return 1;                        //没有等到应答信号,读一个字节失败  
+   \   0000006A   0120               MOVS     R0,#+1
+   \   0000006C   2BE0               B.N      ??hw_iic_read1_1
+    184          	}
+    185          	I2C_C1_REG(num) |= 0x04;//当MCU在主机模 式下，向该位写1将产生一个重新开始信号  
+   \                     ??hw_iic_read1_4:
+   \   0000006E   B878               LDRB     R0,[R7, #+2]
+   \   00000070   50F00400           ORRS     R0,R0,#0x4
+   \   00000074   B870               STRB     R0,[R7, #+2]
+    186          	I2C_D_REG(num) = DeviceAddr | 0x01; //通知从机改为发送数据    
+   \   00000076   55F00100           ORRS     R0,R5,#0x1
+   \   0000007A   3871               STRB     R0,[R7, #+4]
+    187          	if (hw_wait('T',MoudleNum))               //等待一个字节数据传送完成  
+   \   0000007C   2100               MOVS     R1,R4
+   \   0000007E   5420               MOVS     R0,#+84
+   \   00000080   ........           BL       hw_wait
+   \   00000084   0028               CMP      R0,#+0
+   \   00000086   01D0               BEQ.N    ??hw_iic_read1_5
+    188          	{
+    189          	 
+    190          		return 1;                       //没有传送成功,读一个字节失败 
+   \   00000088   0120               MOVS     R0,#+1
+   \   0000008A   1CE0               B.N      ??hw_iic_read1_1
+    191          	}
+    192          	if (hw_wait('A',MoudleNum))               //等待从机应答信号  
+   \                     ??hw_iic_read1_5:
+   \   0000008C   2100               MOVS     R1,R4
+   \   0000008E   4120               MOVS     R0,#+65
+   \   00000090   ........           BL       hw_wait
+   \   00000094   0028               CMP      R0,#+0
+   \   00000096   01D0               BEQ.N    ??hw_iic_read1_6
+    193          	{
+    194          	 
+    195          		return 1;                      //没有等到应答信号,读一个字节失败
+   \   00000098   0120               MOVS     R0,#+1
+   \   0000009A   14E0               B.N      ??hw_iic_read1_1
+    196          	}
+    197          	I2C_C1_REG(num) &= 0xef;           //TX = 0,MCU设置为接收模式    
+   \                     ??hw_iic_read1_6:
+   \   0000009C   B878               LDRB     R0,[R7, #+2]
+   \   0000009E   10F0EF00           ANDS     R0,R0,#0xEF
+   \   000000A2   B870               STRB     R0,[R7, #+2]
+    198          	*Data = I2C_D_REG(num);            //读出IIC1D,准备接收数据   
+   \   000000A4   3879               LDRB     R0,[R7, #+4]
+   \   000000A6   3070               STRB     R0,[R6, #+0]
+    199          	if (hw_wait('T',MoudleNum))              //等待一个字节数据传送完成  
+   \   000000A8   2100               MOVS     R1,R4
+   \   000000AA   5420               MOVS     R0,#+84
+   \   000000AC   ........           BL       hw_wait
+   \   000000B0   0028               CMP      R0,#+0
+   \   000000B2   01D0               BEQ.N    ??hw_iic_read1_7
+    200          	{  
+    201          	 
+    202          		return 1;                      //没有传送成功,读一个字节失败  
+   \   000000B4   0120               MOVS     R0,#+1
+   \   000000B6   06E0               B.N      ??hw_iic_read1_1
+    203          	}
+    204          	hw_send_signal('O',MoudleNum);           //发送停止信号    
+   \                     ??hw_iic_read1_7:
+   \   000000B8   2100               MOVS     R1,R4
+   \   000000BA   4F20               MOVS     R0,#+79
+   \   000000BC   ........           BL       hw_send_signal
+    205          	*Data = I2C_D_REG(num);            //读出接收到的一个数据    
+   \   000000C0   3879               LDRB     R0,[R7, #+4]
+   \   000000C2   3070               STRB     R0,[R6, #+0]
+    206          	
+    207          	return 0;                          //正确接收到一个字节数据
+   \   000000C4   0020               MOVS     R0,#+0
+   \                     ??hw_iic_read1_1:
+   \   000000C6   BDE8F081           POP      {R4-R8,PC}       ;; return
+    208          	
+    209          }
+    210          
+    211          //============================================================================
+    212          //函数名称：hw_iic_write1                                                        
+    213          //功能概要：向从机写1个字节数据                                           
+    214          //参数说明：  MoudleNum:模块号       
+    215          //          DeviceAddr:设备地址    
+    216          //          AccessAddr:访问地址
+    217          //          Data:要发给从机的1个字节数据  
+    218          //函数返回：为0,成功写一个字节;为1,写一个字节失败 
+    219          //函数说明: 内部调用 hw_send_signal,hw_wait  
+    220          //============================================================================
+    221          
+
+   \                                 In section .text, align 2, keep-with-next
+    222          uint8 hw_iic_write1(int MoudleNum,uint8 DeviceAddr, uint8 AccessAddr, uint8 Data)
+    223          {
+   \                     hw_iic_write1:
+   \   00000000   2DE9F041           PUSH     {R4-R8,LR}
+   \   00000004   0400               MOVS     R4,R0
+   \   00000006   0D00               MOVS     R5,R1
+   \   00000008   1600               MOVS     R6,R2
+   \   0000000A   1F00               MOVS     R7,R3
+    224          	//获取i2c模块基址
+    225          	I2C_MemMapPtr num = hw_i2c_get_base_address(MoudleNum);
+   \   0000000C   2000               MOVS     R0,R4
+   \   0000000E   ........           BL       hw_i2c_get_base_address
+   \   00000012   8046               MOV      R8,R0
+    226          	
+    227          	I2C_C1_REG(num) |= 0x10;             //TX = 1,MCU设置为发送模式
+   \   00000014   98F80200           LDRB     R0,[R8, #+2]
+   \   00000018   50F01000           ORRS     R0,R0,#0x10
+   \   0000001C   88F80200           STRB     R0,[R8, #+2]
+    228              hw_send_signal('S',MoudleNum);             //发送开始信号
+   \   00000020   2100               MOVS     R1,R4
+   \   00000022   5320               MOVS     R0,#+83
+   \   00000024   ........           BL       hw_send_signal
+    229              I2C_D_REG(num) = DeviceAddr & 0xfe;  //发送设备地址,并通知从机接收数据
+   \   00000028   15F0FE00           ANDS     R0,R5,#0xFE
+   \   0000002C   88F80400           STRB     R0,[R8, #+4]
+    230              if (hw_wait('T',MoudleNum))                //等待一个字节数据传送完成
+   \   00000030   2100               MOVS     R1,R4
+   \   00000032   5420               MOVS     R0,#+84
+   \   00000034   ........           BL       hw_wait
+   \   00000038   0028               CMP      R0,#+0
+   \   0000003A   01D0               BEQ.N    ??hw_iic_write1_0
+    231                  return 1;                        //没有传送成功,写一个字节失败
+   \   0000003C   0120               MOVS     R0,#+1
+   \   0000003E   30E0               B.N      ??hw_iic_write1_1
+    232              if (hw_wait('A',MoudleNum))               //等待从机应答信号
+   \                     ??hw_iic_write1_0:
+   \   00000040   2100               MOVS     R1,R4
+   \   00000042   4120               MOVS     R0,#+65
+   \   00000044   ........           BL       hw_wait
+   \   00000048   0028               CMP      R0,#+0
+   \   0000004A   01D0               BEQ.N    ??hw_iic_write1_2
+    233                  return 1;                       //没有等到应答信号,写一个字节失败   
+   \   0000004C   0120               MOVS     R0,#+1
+   \   0000004E   28E0               B.N      ??hw_iic_write1_1
+    234              I2C_D_REG(num) = AccessAddr;         //发送访问地址
+   \                     ??hw_iic_write1_2:
+   \   00000050   88F80460           STRB     R6,[R8, #+4]
+    235              if (hw_wait('T',MoudleNum))               //等待一个字节数据传送完成
+   \   00000054   2100               MOVS     R1,R4
+   \   00000056   5420               MOVS     R0,#+84
+   \   00000058   ........           BL       hw_wait
+   \   0000005C   0028               CMP      R0,#+0
+   \   0000005E   01D0               BEQ.N    ??hw_iic_write1_3
+    236                  return 1;                       //没有传送成功,写一个字节失败
+   \   00000060   0120               MOVS     R0,#+1
+   \   00000062   1EE0               B.N      ??hw_iic_write1_1
+    237              if (hw_wait('A',MoudleNum))               //等待从机应答信号
+   \                     ??hw_iic_write1_3:
+   \   00000064   2100               MOVS     R1,R4
+   \   00000066   4120               MOVS     R0,#+65
+   \   00000068   ........           BL       hw_wait
+   \   0000006C   0028               CMP      R0,#+0
+   \   0000006E   01D0               BEQ.N    ??hw_iic_write1_4
+    238                  return 1;                      //没有等到应答信号,写一个字节失败   
+   \   00000070   0120               MOVS     R0,#+1
+   \   00000072   16E0               B.N      ??hw_iic_write1_1
+    239              I2C_D_REG(num) = Data;             //写数据
+   \                     ??hw_iic_write1_4:
+   \   00000074   88F80470           STRB     R7,[R8, #+4]
+    240              if (hw_wait('T',MoudleNum))              //等待一个字节数据传送完成
+   \   00000078   2100               MOVS     R1,R4
+   \   0000007A   5420               MOVS     R0,#+84
+   \   0000007C   ........           BL       hw_wait
+   \   00000080   0028               CMP      R0,#+0
+   \   00000082   01D0               BEQ.N    ??hw_iic_write1_5
+    241                  return 1;                      //没有传送成功,写一个字节失败
+   \   00000084   0120               MOVS     R0,#+1
+   \   00000086   0CE0               B.N      ??hw_iic_write1_1
+    242              if (hw_wait('A',MoudleNum))              //等待从机应答信号
+   \                     ??hw_iic_write1_5:
+   \   00000088   2100               MOVS     R1,R4
+   \   0000008A   4120               MOVS     R0,#+65
+   \   0000008C   ........           BL       hw_wait
+   \   00000090   0028               CMP      R0,#+0
+   \   00000092   01D0               BEQ.N    ??hw_iic_write1_6
+    243                  return 1;                      //没有等到应答信号,写一个字节失败   
+   \   00000094   0120               MOVS     R0,#+1
+   \   00000096   04E0               B.N      ??hw_iic_write1_1
+    244              hw_send_signal('O',MoudleNum);           //发送停止信号
+   \                     ??hw_iic_write1_6:
+   \   00000098   2100               MOVS     R1,R4
+   \   0000009A   4F20               MOVS     R0,#+79
+   \   0000009C   ........           BL       hw_send_signal
+    245              return 0;
+   \   000000A0   0020               MOVS     R0,#+0
+   \                     ??hw_iic_write1_1:
+   \   000000A2   BDE8F081           POP      {R4-R8,PC}       ;; return
+    246          }
+    247          
+    248          
+    249          //============================================================================
+    250          //函数名称：hw_iic_readn                                                        
+    251          //功能概要： 从从机读N个字节数据                                             
+    252          //参数说明：  MoudleNum:模块号       
+    253          //          DeviceAddr:设备地址    
+    254          //          AccessAddr:访问地址
+    255          //          Data:读出数据的缓冲区
+    256          //          N:从从机读的字节个数 
+    257          //函数返回： 为0,成功读N个字节;为1,读N个字节失败  
+    258          //函数说明: 内部调用hw_iic_read1  
+    259          //============================================================================
+
+   \                                 In section .text, align 2, keep-with-next
+    260          uint8 hw_iic_readn(int MoudleNum,uint8 DeviceAddr, uint8 AccessAddr, uint8 Data[], uint8 N)
+    261          {
+   \                     hw_iic_readn:
+   \   00000000   2DE9F843           PUSH     {R3-R9,LR}
+   \   00000004   0500               MOVS     R5,R0
+   \   00000006   0E00               MOVS     R6,R1
+   \   00000008   1700               MOVS     R7,R2
+   \   0000000A   9846               MOV      R8,R3
+   \   0000000C   089C               LDR      R4,[SP, #+32]
+    262              uint16 i, j;
+    263              for (i = 0;i < N;i++)
+   \   0000000E   5FF00009           MOVS     R9,#+0
+   \   00000012   01E0               B.N      ??hw_iic_readn_0
+   \                     ??hw_iic_readn_1:
+   \   00000014   19F10109           ADDS     R9,R9,#+1
+   \                     ??hw_iic_readn_0:
+   \   00000018   2000               MOVS     R0,R4
+   \   0000001A   C0B2               UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   0000001C   1FFA89F9           UXTH     R9,R9            ;; ZeroExt  R9,R9,#+16,#+16
+   \   00000020   80B2               UXTH     R0,R0            ;; ZeroExt  R0,R0,#+16,#+16
+   \   00000022   8145               CMP      R9,R0
+   \   00000024   17D2               BCS.N    ??hw_iic_readn_2
+    264              {
+    265                  for(j = 0;j <15*40 ;j++); //最小延时(发送的每个字节之间要有时间间隔)
+   \   00000026   0020               MOVS     R0,#+0
+   \   00000028   00E0               B.N      ??hw_iic_readn_3
+   \                     ??hw_iic_readn_4:
+   \   0000002A   401C               ADDS     R0,R0,#+1
+   \                     ??hw_iic_readn_3:
+   \   0000002C   4FF41671           MOV      R1,#+600
+   \   00000030   80B2               UXTH     R0,R0            ;; ZeroExt  R0,R0,#+16,#+16
+   \   00000032   8842               CMP      R0,R1
+   \   00000034   F9D3               BCC.N    ??hw_iic_readn_4
+    266                  if (hw_iic_read1(MoudleNum,DeviceAddr, AccessAddr + i, &Data[i]))  
+   \   00000036   1FFA89F9           UXTH     R9,R9            ;; ZeroExt  R9,R9,#+16,#+16
+   \   0000003A   19EB0803           ADDS     R3,R9,R8
+   \   0000003E   19EB0702           ADDS     R2,R9,R7
+   \   00000042   D2B2               UXTB     R2,R2            ;; ZeroExt  R2,R2,#+24,#+24
+   \   00000044   3100               MOVS     R1,R6
+   \   00000046   C9B2               UXTB     R1,R1            ;; ZeroExt  R1,R1,#+24,#+24
+   \   00000048   2800               MOVS     R0,R5
+   \   0000004A   ........           BL       hw_iic_read1
+   \   0000004E   0028               CMP      R0,#+0
+   \   00000050   E0D0               BEQ.N    ??hw_iic_readn_1
+    267                      return 1;             //其中一个字节没有接收到,返回失败标志:1
+   \   00000052   0120               MOVS     R0,#+1
+   \   00000054   07E0               B.N      ??hw_iic_readn_5
+    268              }
+    269              if (i >= N)
+   \                     ??hw_iic_readn_2:
+   \   00000056   E4B2               UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000058   1FFA89F9           UXTH     R9,R9            ;; ZeroExt  R9,R9,#+16,#+16
+   \   0000005C   A4B2               UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   0000005E   A145               CMP      R9,R4
+   \   00000060   01D3               BCC.N    ??hw_iic_readn_6
+    270                  return 0;                 //成功接收N个数据,返回成功标志:0
+   \   00000062   0020               MOVS     R0,#+0
+   \   00000064   FFE7               B.N      ??hw_iic_readn_5
+    271          }
+   \                     ??hw_iic_readn_6:
+   \                     ??hw_iic_readn_5:
+   \   00000066   BDE8F283           POP      {R1,R4-R9,PC}    ;; return
+    272          
+    273          
+    274          //============================================================================
+    275          //函数名称：hw_iic_writen                                                        
+    276          //功能概要： 向从机写N个字节数据                                              
+    277          //参数说明：  MoudleNum:模块号       
+    278          //          DeviceAddr:设备地址    
+    279          //          AccessAddr:访问地址
+    280          //          Data:要写入的数据  
+    281          //          N:从从机读的字节个数 
+    282          //函数返回： 为0,成功写N个字节;为1,写N个字节失败
+    283          //函数说明: 内部调用hw_iic_write1   
+    284          //============================================================================
+
+   \                                 In section .text, align 2, keep-with-next
+    285          uint8 hw_iic_writen(int MoudleNum,uint8 DeviceAddr, uint8 AccessAddr,uint8 Data[], uint8 N)
+    286          {
+   \                     hw_iic_writen:
+   \   00000000   2DE9F843           PUSH     {R3-R9,LR}
+   \   00000004   0500               MOVS     R5,R0
+   \   00000006   0E00               MOVS     R6,R1
+   \   00000008   1700               MOVS     R7,R2
+   \   0000000A   9846               MOV      R8,R3
+   \   0000000C   089C               LDR      R4,[SP, #+32]
+    287              uint16 i, j;
+    288              for (i = 0;i < N;i++)
+   \   0000000E   5FF00009           MOVS     R9,#+0
+   \   00000012   01E0               B.N      ??hw_iic_writen_0
+   \                     ??hw_iic_writen_1:
+   \   00000014   19F10109           ADDS     R9,R9,#+1
+   \                     ??hw_iic_writen_0:
+   \   00000018   2000               MOVS     R0,R4
+   \   0000001A   C0B2               UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24
+   \   0000001C   1FFA89F9           UXTH     R9,R9            ;; ZeroExt  R9,R9,#+16,#+16
+   \   00000020   80B2               UXTH     R0,R0            ;; ZeroExt  R0,R0,#+16,#+16
+   \   00000022   8145               CMP      R9,R0
+   \   00000024   17D2               BCS.N    ??hw_iic_writen_2
+    289              {
+    290                  for(j = 0;j < 15*40;j++); //最小延时(发送的每个字节之间要有时间间隔)
+   \   00000026   0020               MOVS     R0,#+0
+   \   00000028   00E0               B.N      ??hw_iic_writen_3
+   \                     ??hw_iic_writen_4:
+   \   0000002A   401C               ADDS     R0,R0,#+1
+   \                     ??hw_iic_writen_3:
+   \   0000002C   4FF41671           MOV      R1,#+600
+   \   00000030   80B2               UXTH     R0,R0            ;; ZeroExt  R0,R0,#+16,#+16
+   \   00000032   8842               CMP      R0,R1
+   \   00000034   F9D3               BCC.N    ??hw_iic_writen_4
+    291                  if (hw_iic_write1(MoudleNum,DeviceAddr, AccessAddr + i, Data[i]))
+   \   00000036   1FFA89F9           UXTH     R9,R9            ;; ZeroExt  R9,R9,#+16,#+16
+   \   0000003A   19F80830           LDRB     R3,[R9, R8]
+   \   0000003E   19EB0702           ADDS     R2,R9,R7
+   \   00000042   D2B2               UXTB     R2,R2            ;; ZeroExt  R2,R2,#+24,#+24
+   \   00000044   3100               MOVS     R1,R6
+   \   00000046   C9B2               UXTB     R1,R1            ;; ZeroExt  R1,R1,#+24,#+24
+   \   00000048   2800               MOVS     R0,R5
+   \   0000004A   ........           BL       hw_iic_write1
+   \   0000004E   0028               CMP      R0,#+0
+   \   00000050   E0D0               BEQ.N    ??hw_iic_writen_1
+    292                      return 1;            //其中一个字节没有发送出去,返回失败标志:1
+   \   00000052   0120               MOVS     R0,#+1
+   \   00000054   07E0               B.N      ??hw_iic_writen_5
+    293              }
+    294              if (i >= N)
+   \                     ??hw_iic_writen_2:
+   \   00000056   E4B2               UXTB     R4,R4            ;; ZeroExt  R4,R4,#+24,#+24
+   \   00000058   1FFA89F9           UXTH     R9,R9            ;; ZeroExt  R9,R9,#+16,#+16
+   \   0000005C   A4B2               UXTH     R4,R4            ;; ZeroExt  R4,R4,#+16,#+16
+   \   0000005E   A145               CMP      R9,R4
+   \   00000060   01D3               BCC.N    ??hw_iic_writen_6
+    295                  return 0;                //成功发送N个数据,返回成功标志:0
+   \   00000062   0020               MOVS     R0,#+0
+   \   00000064   FFE7               B.N      ??hw_iic_writen_5
+    296          }
+   \                     ??hw_iic_writen_6:
+   \                     ??hw_iic_writen_5:
+   \   00000066   BDE8F283           POP      {R1,R4-R9,PC}    ;; return
+    297          //============================================================================
+    298          //函数名称：hw_i2c_get_base_address                                                        
+    299          //功能概要：获取i2c模块的基址                                                
+    300          //参数说明：i2cNO:i2c模块号      
+    301          //函数返回：i2c模块的基址值                                                                  
+    302          //============================================================================
+
+   \                                 In section .text, align 2, keep-with-next
+    303          I2C_MemMapPtr hw_i2c_get_base_address(int i2cNO)
+    304          {
+    305          	switch(i2cNO)
+   \                     hw_i2c_get_base_address:
+   \   00000000   0028               CMP      R0,#+0
+   \   00000002   02D0               BEQ.N    ??hw_i2c_get_base_address_0
+   \   00000004   0128               CMP      R0,#+1
+   \   00000006   02D0               BEQ.N    ??hw_i2c_get_base_address_1
+   \   00000008   03E0               B.N      ??hw_i2c_get_base_address_2
+    306          	{
+    307          	case 0:
+    308          		return I2C0_BASE_PTR;
+   \                     ??hw_i2c_get_base_address_0:
+   \   0000000A   ....               LDR.N    R0,??DataTable2  ;; 0x40066000
+   \   0000000C   01E0               B.N      ??hw_i2c_get_base_address_3
+    309          		break;
+    310          	case 1:
+    311          		return I2C1_BASE_PTR;
+   \                     ??hw_i2c_get_base_address_1:
+   \   0000000E   ....               LDR.N    R0,??DataTable2_10  ;; 0x40067000
+   \   00000010   FFE7               B.N      ??hw_i2c_get_base_address_3
+    312          		break;
+    313          	
+    314          	}
+    315          }
+   \                     ??hw_i2c_get_base_address_2:
+   \                     ??hw_i2c_get_base_address_3:
+   \   00000012   7047               BX       LR               ;; return
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2:
+   \   00000000   00600640           DC32     0x40066000
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_1:
+   \   00000000   34800440           DC32     0x40048034
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_2:
+   \   00000000   00A00440           DC32     0x4004a000
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_3:
+   \   00000000   04A00440           DC32     0x4004a004
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_4:
+   \   00000000   01600640           DC32     0x40066001
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_5:
+   \   00000000   02600640           DC32     0x40066002
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_6:
+   \   00000000   28B00440           DC32     0x4004b028
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_7:
+   \   00000000   2CB00440           DC32     0x4004b02c
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_8:
+   \   00000000   01700640           DC32     0x40067001
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_9:
+   \   00000000   02700640           DC32     0x40067002
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_10:
+   \   00000000   00700640           DC32     0x40067000
+    316          #endif 
+
+   Maximum stack usage in bytes:
+
+     Function                .cstack
+     --------                -------
+     hw_i2c_get_base_address      0
+     hw_i2c_init                  8
+     hw_iic_read1                24
+     hw_iic_readn                32
+     hw_iic_write1               24
+     hw_iic_writen               32
+     hw_send_signal               8
+     hw_wait                      8
+
+
+   Section sizes:
+
+     Function/Label          Bytes
+     --------------          -----
+     hw_i2c_init              116
+     hw_send_signal           102
+     hw_wait                   82
+     hw_iic_read1             202
+     hw_iic_write1            166
+     hw_iic_readn             106
+     hw_iic_writen            106
+     hw_i2c_get_base_address   20
+     ??DataTable2               4
+     ??DataTable2_1             4
+     ??DataTable2_2             4
+     ??DataTable2_3             4
+     ??DataTable2_4             4
+     ??DataTable2_5             4
+     ??DataTable2_6             4
+     ??DataTable2_7             4
+     ??DataTable2_8             4
+     ??DataTable2_9             4
+     ??DataTable2_10            4
+
+ 
+ 944 bytes in section .text
+ 
+ 944 bytes of CODE memory
+
+Errors: none
+Warnings: 6

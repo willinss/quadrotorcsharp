@@ -1,0 +1,268 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.10.1.52143/W32 for ARM     28/Apr/2012  19:46:13 #
+# Copyright 1999-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  C:\Documents and Settings\Administrator\iar\Myproject\42 #
+#                    8IIC\src\Sources\C\Component_C\control.c                 #
+#    Command line =  "C:\Documents and Settings\Administrator\iar\Myproject\4 #
+#                    28IIC\src\Sources\C\Component_C\control.c" -D IAR -D     #
+#                    TWR_K60N512 -lCN "C:\Documents and                       #
+#                    Settings\Administrator\iar\Myproject\428IIC\bin\Ram\List #
+#                    \" -lB "C:\Documents and Settings\Administrator\iar\Mypr #
+#                    oject\428IIC\bin\Ram\List\" -o "C:\Documents and         #
+#                    Settings\Administrator\iar\Myproject\428IIC\bin\Ram\Obj\ #
+#                    " --no_cse --no_unroll --no_inline --no_code_motion      #
+#                    --no_tbaa --no_clustering --no_scheduling --debug        #
+#                    --endian=little --cpu=Cortex-M4 -e --fpu=None            #
+#                    --dlib_config "D:\IAR Systems\Embedded Workbench         #
+#                    6.0\arm\INC\c\DLib_Config_Normal.h" -I "C:\Documents     #
+#                    and Settings\Administrator\iar\Myproject\428IIC\src\Sour #
+#                    ces\H\" -I "C:\Documents and                             #
+#                    Settings\Administrator\iar\Myproject\428IIC\src\Sources\ #
+#                    H\Component_H\" -I "C:\Documents and                     #
+#                    Settings\Administrator\iar\Myproject\428IIC\src\Sources\ #
+#                    H\Frame_H\" -Ol --use_c++_inline                         #
+#    List file    =  C:\Documents and Settings\Administrator\iar\Myproject\42 #
+#                    8IIC\bin\Ram\List\control.lst                            #
+#    Object file  =  C:\Documents and Settings\Administrator\iar\Myproject\42 #
+#                    8IIC\bin\Ram\Obj\control.o                               #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+C:\Documents and Settings\Administrator\iar\Myproject\428IIC\src\Sources\C\Component_C\control.c
+      1          #include "control.h"
+      2          #include "ftm.h"
+      3          
+      4          
+
+   \                                 In section .text, align 4, keep-with-next
+      5          void Quadrotor_pid(float angle_X,float angle_Y,float angle_Z,int height )
+      6          {float U1,U2,U3,U4,W1,W2,W3,W4;
+   \                     Quadrotor_pid:
+   \   00000000   2DE9FE4F           PUSH     {R1-R11,LR}
+   \   00000004   8246               MOV      R10,R0
+   \   00000006   8946               MOV      R9,R1
+   \   00000008   9346               MOV      R11,R2
+      7           int16 w1=0,w2=0,w3=0,w4=0;
+   \   0000000A   0024               MOVS     R4,#+0
+   \   0000000C   0025               MOVS     R5,#+0
+   \   0000000E   0026               MOVS     R6,#+0
+   \   00000010   0027               MOVS     R7,#+0
+      8           
+      9           U1 = -K1 * height;               //´¹Ö±¿ØÖÆ
+   \   00000012   7FF00400           MVNS     R0,#+4
+   \   00000016   00FB03F0           MUL      R0,R0,R3
+   \   0000001A   ........           BL       __aeabi_i2f
+   \   0000001E   8046               MOV      R8,R0
+     10           U2 = -K2 * angle_Y;         //¹ö×ª¿ØÖÆ
+   \   00000020   6748               LDR.N    R0,??Quadrotor_pid_0  ;; 0xc0a00000
+   \   00000022   4946               MOV      R1,R9
+   \   00000024   ........           BL       __aeabi_fmul
+   \   00000028   8146               MOV      R9,R0
+     11           U3 = -K3 * angle_X;         //¸©Ñö¿ØÖÆ
+   \   0000002A   6548               LDR.N    R0,??Quadrotor_pid_0  ;; 0xc0a00000
+   \   0000002C   5146               MOV      R1,R10
+   \   0000002E   ........           BL       __aeabi_fmul
+   \   00000032   8246               MOV      R10,R0
+     12           U4 = -K4 * angle_Z;         //Æ«º½¿ØÖÆ 
+   \   00000034   6248               LDR.N    R0,??Quadrotor_pid_0  ;; 0xc0a00000
+   \   00000036   5946               MOV      R1,R11
+   \   00000038   ........           BL       __aeabi_fmul
+   \   0000003C   8346               MOV      R11,R0
+     13           
+     14           W1 = U1/4 - U3/2 - U4/4;
+   \   0000003E   4046               MOV      R0,R8
+   \   00000040   5FF08141           MOVS     R1,#+1082130432
+   \   00000044   ........           BL       __aeabi_fdiv
+   \   00000048   0090               STR      R0,[SP, #+0]
+   \   0000004A   5046               MOV      R0,R10
+   \   0000004C   5FF08041           MOVS     R1,#+1073741824
+   \   00000050   ........           BL       __aeabi_fdiv
+   \   00000054   0100               MOVS     R1,R0
+   \   00000056   0098               LDR      R0,[SP, #+0]
+   \   00000058   ........           BL       __aeabi_fsub
+   \   0000005C   0090               STR      R0,[SP, #+0]
+   \   0000005E   5846               MOV      R0,R11
+   \   00000060   5FF08141           MOVS     R1,#+1082130432
+   \   00000064   ........           BL       __aeabi_fdiv
+   \   00000068   0100               MOVS     R1,R0
+   \   0000006A   0098               LDR      R0,[SP, #+0]
+   \   0000006C   ........           BL       __aeabi_fsub
+   \   00000070   0290               STR      R0,[SP, #+8]
+     15           W2 = U1/4 - U2/2 + U4/4;
+   \   00000072   4046               MOV      R0,R8
+   \   00000074   5FF08141           MOVS     R1,#+1082130432
+   \   00000078   ........           BL       __aeabi_fdiv
+   \   0000007C   0090               STR      R0,[SP, #+0]
+   \   0000007E   4846               MOV      R0,R9
+   \   00000080   5FF08041           MOVS     R1,#+1073741824
+   \   00000084   ........           BL       __aeabi_fdiv
+   \   00000088   0100               MOVS     R1,R0
+   \   0000008A   0098               LDR      R0,[SP, #+0]
+   \   0000008C   ........           BL       __aeabi_fsub
+   \   00000090   0090               STR      R0,[SP, #+0]
+   \   00000092   5846               MOV      R0,R11
+   \   00000094   5FF08141           MOVS     R1,#+1082130432
+   \   00000098   ........           BL       __aeabi_fdiv
+   \   0000009C   0099               LDR      R1,[SP, #+0]
+   \   0000009E   ........           BL       __aeabi_fadd
+   \   000000A2   0190               STR      R0,[SP, #+4]
+     16           W3 = U1/4 + U3/2 - U4/4;
+   \   000000A4   4046               MOV      R0,R8
+   \   000000A6   5FF08141           MOVS     R1,#+1082130432
+   \   000000AA   ........           BL       __aeabi_fdiv
+   \   000000AE   0090               STR      R0,[SP, #+0]
+   \   000000B0   5046               MOV      R0,R10
+   \   000000B2   5FF08041           MOVS     R1,#+1073741824
+   \   000000B6   ........           BL       __aeabi_fdiv
+   \   000000BA   0099               LDR      R1,[SP, #+0]
+   \   000000BC   ........           BL       __aeabi_fadd
+   \   000000C0   8246               MOV      R10,R0
+   \   000000C2   5846               MOV      R0,R11
+   \   000000C4   5FF08141           MOVS     R1,#+1082130432
+   \   000000C8   ........           BL       __aeabi_fdiv
+   \   000000CC   0100               MOVS     R1,R0
+   \   000000CE   5046               MOV      R0,R10
+   \   000000D0   ........           BL       __aeabi_fsub
+   \   000000D4   8246               MOV      R10,R0
+     17           W4 = U1/4 + U2/2 + U4/4;
+   \   000000D6   4046               MOV      R0,R8
+   \   000000D8   5FF08141           MOVS     R1,#+1082130432
+   \   000000DC   ........           BL       __aeabi_fdiv
+   \   000000E0   8046               MOV      R8,R0
+   \   000000E2   4846               MOV      R0,R9
+   \   000000E4   5FF08041           MOVS     R1,#+1073741824
+   \   000000E8   ........           BL       __aeabi_fdiv
+   \   000000EC   4146               MOV      R1,R8
+   \   000000EE   ........           BL       __aeabi_fadd
+   \   000000F2   8046               MOV      R8,R0
+   \   000000F4   5846               MOV      R0,R11
+   \   000000F6   5FF08141           MOVS     R1,#+1082130432
+   \   000000FA   ........           BL       __aeabi_fdiv
+   \   000000FE   4146               MOV      R1,R8
+   \   00000100   ........           BL       __aeabi_fadd
+   \   00000104   8046               MOV      R8,R0
+     18           
+     19           w1 = 1000 + (int)W1;
+   \   00000106   0298               LDR      R0,[SP, #+8]
+   \   00000108   ........           BL       __aeabi_f2iz
+   \   0000010C   00F2E830           ADDW     R0,R0,#+1000
+   \   00000110   0400               MOVS     R4,R0
+     20           if(w1 < 1000)      w1 = 1000;
+   \   00000112   4FF47A70           MOV      R0,#+1000
+   \   00000116   24B2               SXTH     R4,R4            ;; SignExt  R4,R4,#+16,#+16
+   \   00000118   8442               CMP      R4,R0
+   \   0000011A   02DA               BGE.N    ??Quadrotor_pid_1
+   \   0000011C   4FF47A74           MOV      R4,#+1000
+   \   00000120   06E0               B.N      ??Quadrotor_pid_2
+     21           else if(w1 > 1200) w1 = 1200;
+   \                     ??Quadrotor_pid_1:
+   \   00000122   40F2B140           MOVW     R0,#+1201
+   \   00000126   24B2               SXTH     R4,R4            ;; SignExt  R4,R4,#+16,#+16
+   \   00000128   8442               CMP      R4,R0
+   \   0000012A   01DB               BLT.N    ??Quadrotor_pid_2
+   \   0000012C   4FF49664           MOV      R4,#+1200
+     22           
+     23           w2 = 1000 + (int)W2;
+   \                     ??Quadrotor_pid_2:
+   \   00000130   0198               LDR      R0,[SP, #+4]
+   \   00000132   ........           BL       __aeabi_f2iz
+   \   00000136   00F2E835           ADDW     R5,R0,#+1000
+     24           if(w2 < 1000)      w2 = 1000;
+   \   0000013A   4FF47A70           MOV      R0,#+1000
+   \   0000013E   2DB2               SXTH     R5,R5            ;; SignExt  R5,R5,#+16,#+16
+   \   00000140   8542               CMP      R5,R0
+   \   00000142   02DA               BGE.N    ??Quadrotor_pid_3
+   \   00000144   4FF47A75           MOV      R5,#+1000
+   \   00000148   06E0               B.N      ??Quadrotor_pid_4
+     25           else if(w2 > 1200) w2 = 1200;
+   \                     ??Quadrotor_pid_3:
+   \   0000014A   40F2B140           MOVW     R0,#+1201
+   \   0000014E   2DB2               SXTH     R5,R5            ;; SignExt  R5,R5,#+16,#+16
+   \   00000150   8542               CMP      R5,R0
+   \   00000152   01DB               BLT.N    ??Quadrotor_pid_4
+   \   00000154   4FF49665           MOV      R5,#+1200
+     26           
+     27           w3 = 1000 + (int)W3;
+   \                     ??Quadrotor_pid_4:
+   \   00000158   5046               MOV      R0,R10
+   \   0000015A   ........           BL       __aeabi_f2iz
+   \   0000015E   00F2E836           ADDW     R6,R0,#+1000
+     28           if(w3 < 1000)      w3 = 1000;
+   \   00000162   4FF47A70           MOV      R0,#+1000
+   \   00000166   36B2               SXTH     R6,R6            ;; SignExt  R6,R6,#+16,#+16
+   \   00000168   8642               CMP      R6,R0
+   \   0000016A   02DA               BGE.N    ??Quadrotor_pid_5
+   \   0000016C   4FF47A76           MOV      R6,#+1000
+   \   00000170   06E0               B.N      ??Quadrotor_pid_6
+     29           else if(w3 > 1200) w3 = 1200;
+   \                     ??Quadrotor_pid_5:
+   \   00000172   40F2B140           MOVW     R0,#+1201
+   \   00000176   36B2               SXTH     R6,R6            ;; SignExt  R6,R6,#+16,#+16
+   \   00000178   8642               CMP      R6,R0
+   \   0000017A   01DB               BLT.N    ??Quadrotor_pid_6
+   \   0000017C   4FF49666           MOV      R6,#+1200
+     30           
+     31           w4 = 1000 + (int)W4;
+   \                     ??Quadrotor_pid_6:
+   \   00000180   4046               MOV      R0,R8
+   \   00000182   ........           BL       __aeabi_f2iz
+   \   00000186   00F2E837           ADDW     R7,R0,#+1000
+     32           if(w4 < 1000)      w4 = 1000;
+   \   0000018A   4FF47A70           MOV      R0,#+1000
+   \   0000018E   3FB2               SXTH     R7,R7            ;; SignExt  R7,R7,#+16,#+16
+   \   00000190   8742               CMP      R7,R0
+   \   00000192   02DA               BGE.N    ??Quadrotor_pid_7
+   \   00000194   4FF47A77           MOV      R7,#+1000
+   \   00000198   06E0               B.N      ??Quadrotor_pid_8
+     33           else if(w4 > 1200) w4 = 1200;
+   \                     ??Quadrotor_pid_7:
+   \   0000019A   40F2B140           MOVW     R0,#+1201
+   \   0000019E   3FB2               SXTH     R7,R7            ;; SignExt  R7,R7,#+16,#+16
+   \   000001A0   8742               CMP      R7,R0
+   \   000001A2   01DB               BLT.N    ??Quadrotor_pid_8
+   \   000001A4   4FF49667           MOV      R7,#+1200
+     34          
+     35           
+     36           
+     37           set_pwm(w1,w2,w3,w4);
+   \                     ??Quadrotor_pid_8:
+   \   000001A8   3B00               MOVS     R3,R7
+   \   000001AA   9BB2               UXTH     R3,R3            ;; ZeroExt  R3,R3,#+16,#+16
+   \   000001AC   3200               MOVS     R2,R6
+   \   000001AE   92B2               UXTH     R2,R2            ;; ZeroExt  R2,R2,#+16,#+16
+   \   000001B0   2900               MOVS     R1,R5
+   \   000001B2   89B2               UXTH     R1,R1            ;; ZeroExt  R1,R1,#+16,#+16
+   \   000001B4   2000               MOVS     R0,R4
+   \   000001B6   80B2               UXTH     R0,R0            ;; ZeroExt  R0,R0,#+16,#+16
+   \   000001B8   ........           BL       set_pwm
+     38           
+     39          }
+   \   000001BC   BDE8F78F           POP      {R0-R2,R4-R11,PC}  ;; return
+   \                     ??Quadrotor_pid_0:
+   \   000001C0   0000A0C0           DC32     0xc0a00000
+
+   Maximum stack usage in bytes:
+
+     Function      .cstack
+     --------      -------
+     Quadrotor_pid     48
+
+
+   Section sizes:
+
+     Function/Label Bytes
+     -------------- -----
+     Quadrotor_pid   452
+
+ 
+ 452 bytes in section .text
+ 
+ 452 bytes of CODE memory
+
+Errors: none
+Warnings: none

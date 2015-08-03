@@ -1,0 +1,85 @@
+[DebugChecksum]
+Checksum=300176341
+[DisAssemblyWindow]
+NumStates=_ 1
+State 1=_ 1
+[InstructionProfiling]
+Enabled=_ 0
+[CodeCoverage]
+Enabled=_ 0
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
+[StackPlugin]
+Enabled=1
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnHow=0
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[JLinkDriver]
+TraceBufferSize=0x00010000
+TraceStallIfFIFOFull=0x00000000
+TracePortSize=0x00000004
+[TraceHelper]
+Enabled=0
+ShowSource=1
+[Breakpoints]
+Count=0
+[Stack]
+FillEnabled=0
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnLogOnly=1
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[Trace1]
+Enabled=0
+ShowSource=1
+[CallStackLog]
+Enabled=0
+[DriverProfiling]
+Enabled=0
+Mode=1
+Graph=0
+Symbiont=0
+Exclusions=
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\src\Sources\C\Component_C\hw_i2c.c}.123.2" 0 0 1 "" 0 "" 0
+Count=1
+[Aliases]
+A0=_ "C:\Documents and Settings\Administrator\iar\Myproject\control0513\src\Project_Settings\Startup_Code\crt0.s" ""
+A1=_ "C:\Users\Yuson\Desktop\quadrotor1114\quadrotor1114\src\Project_Settings\Startup_Code\crt0.s" ""
+A2=_ "C:\Users\yuson\Desktop\dji\quadrotor1109\src\Sources\C\Component_C\ftm.c" ""
+A3=_ "C:\Users\yuson\Desktop\dji\quadrotor1109\src\Sources\C\Component_C\get_data.c" ""
+A4=_ "D:\quadrotor_code\quadrotor1201\src\Project_Settings\Startup_Code\crt0.s" ""
+A5=_ "D:\quadrotor_code\quadrotor1308021\src\Project_Settings\Startup_Code\crt0.s" ""
+A6=_ "D:\quadrotor_code\quadrotor13080225\src\Sources\C\Component_C\get_data.c" ""
+A7=_ "E:\Project\15_K60\03_Software\02_My program\K60_IAR\02_uart_loop\src\Project_Settings\Startup_Code\crt0.s" ""
+A8=_ "E:\Project\15_K60\03_Software\02_My program\K60_IAR\03_uart_int\src\Project_Settings\Startup_Code\crt0.s" ""
+A9=_ "E:\何旭轩的文档\Project\quadrotor140527云台获取世界坐标（未标定）\src\Sources\C\main.c" ""
+A10=_ "E:\何旭轩的文档\Project\quadrotor140714云台跟随目标(改)\src\Sources\C\Component_C\control.c" ""
+A11=_ "E:\何旭轩的文档\Project\quadrotor140717云台跟随目标(改)\src\Sources\C\Component_C\control.c" ""
+A12=_ "E:\何旭轩的文档\Project\quadrotor140730飞行器降落(稳定)\src\Sources\C\isr.c" ""
+A13=_ "E:\何旭轩的文档\Project\quadrotor150305飞行器跟随小车(改外环控制)\src\Sources\C\isr.c" ""
+Count=14
+SuppressDialog=1

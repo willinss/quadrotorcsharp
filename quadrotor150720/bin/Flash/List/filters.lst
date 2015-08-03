@@ -1,0 +1,297 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     03/Aug/2015  09:48:10 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\src\Sources\C\Component_C\filters.c               #
+#    Command line =  "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\C\Component_C\filters.c" -D IAR -D   #
+#                    TWR_K60N512 -lCN "C:\Users\Thinkpad\Desktop\quadrotor150 #
+#                    720飞行器跟随小车(改I2C)\bin\Flash\List\" -lB            #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\List\" -o                              #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\" --no_cse --no_unroll             #
+#                    --no_inline --no_code_motion --no_tbaa --no_clustering   #
+#                    --no_scheduling --debug --endian=little --cpu=Cortex-M4  #
+#                    -e --fpu=None --dlib_config "E:\Program Files\IAR        #
+#                    Systems\Embedded Workbench 6.4\arm\INC\c\DLib_Config_Nor #
+#                    mal.h" -I "C:\Users\Thinkpad\Desktop\quadrotor150720飞行 #
+#                    器跟随小车(改I2C)\src\Sources\H\" -I                     #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\H\Component_H\" -I                   #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Sources\H\Frame_H\" -Ol --use_c++_inline     #
+#    List file    =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\List\filters.lst                        #
+#    Object file  =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\Obj\filters.o                           #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车(改I2C)\src\Sources\C\Component_C\filters.c
+      1          #include "filters.h"
+      2            
+
+   \                                 In section .rodata, align 4
+      3            const float alpha = 0.98;
+   \                     alpha:
+   \   00000000   0x3F7AE148         DC32 3F7AE148H
+
+   \                                 In section .bss, align 4
+      4            int g_point = 0;
+   \                     g_point:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+      5            float filterx[N];
+   \                     filterx:
+   \   00000000                      DS8 320
+      6            /*const float filterb[N] = {0.0005,0.0003,-0.0001,-0.0005,-0.0008,-0.0011,-0.0011,-0.0008,-0.0001,0.0009
+      7            ,0.0019,0.0027,0.0029,0.0023,0.0008,-0.0015,-0.0040,-0.0060,-0.0068,-0.0059
+      8            ,-0.0029,0.0018,0.0071,0.0117,0.0142,0.0131,0.0081,-0.0007,-0.0116,-0.0221
+      9            ,-0.0293,-0.0302,-0.0224,-0.0050,0.0212,0.0535,0.0880,0.1198,0.1443,0.1576
+     10            ,0.1576,0.1443,0.1198,0.0880,0.0535,0.0212,-0.0050,-0.0224,-0.0302,-0.0293
+     11            ,-0.0221,-0.0116,-0.0007,0.0081,0.0131,0.0142,0.0117,0.0071,0.0018,-0.0029
+     12            ,-0.0059,-0.0068,-0.0060,-0.0040,-0.0015,0.0008,0.0023,0.0029,0.0027,0.0019
+     13            ,0.0009,-0.0001,-0.0008,-0.0011,-0.0011,-0.0008,-0.0005,-0.0001,0.0003,0.0005};
+     14            */
+
+   \                                 In section .rodata, align 4
+     15            const float filterb[N] = {-0.0016,   -0.0019,   -0.0021,   -0.0022,   -0.0021,   -0.0016,   -0.0015,   -0.0013,   -0.0012,   -0.0011,   -0.0010,   -0.0009,   -0.0004,   -0.0004,   -0.0003,   -0.0004,   -0.0005,   -0.0007,   -0.0008,   -0.0007,   -0.0007,   -0.0010,   -0.0006,   -0.0006,   -0.0008,   -0.0008,   -0.0008,   -0.0010,   -0.0009,   -0.0011,   -0.0009,   -0.0008,   -0.0010,   -0.0008,   -0.0005,   -0.0002,   -0.0002,   -0.0000,   -0.0002,   -0.0001,   -0.0002,   -0.0001,   -0.0001,    0.0000,    0.0001,    0.0005,    0.0008,    0.0008,    0.0005,    0.0005,    0.0002,    0.0004,    0.0007,    0.0007,    0.0007,    0.0008,    0.0009,    0.0008,    0.0008,    0.0011,    0.0011,    0.0011,    0.0010,    0.0007,    0.0008,    0.0009,    0.0009,    0.0012,    0.0014,    0.0012,    0.0011,    0.0009,    0.0008,    0.0010,    0.0010,    0.0010,    0.0010,    0.0008,    0.0006,    0.0009};
+   \                     filterb:
+   \   00000000   0xBAD1B717         DC32 0BAD1B717H, 0BAF9096CH, 0BB09A027H, 0BB102DE0H, 0BB09A027H
+   \              0xBAF9096C   
+   \              0xBB09A027   
+   \              0xBB102DE0   
+   \              0xBB09A027   
+   \   00000014   0xBAD1B717         DC32 0BAD1B717H, 0BAC49BA6H, 0BAAA64C3H, 0BA9D4952H, 0BA902DE0H
+   \              0xBAC49BA6   
+   \              0xBAAA64C3   
+   \              0xBA9D4952   
+   \              0xBA902DE0   
+   \   00000028   0xBA83126F         DC32 0BA83126FH, 0BA6BEDFAH, 0B9D1B717H, 0B9D1B717H, 0B99D4952H
+   \              0xBA6BEDFA   
+   \              0xB9D1B717   
+   \              0xB9D1B717   
+   \              0xB99D4952   
+   \   0000003C   0xB9D1B717         DC32 0B9D1B717H, 0BA03126FH, 0BA378034H, 0BA51B717H, 0BA378034H
+   \              0xBA03126F   
+   \              0xBA378034   
+   \              0xBA51B717   
+   \              0xBA378034   
+   \   00000050   0xBA378034         DC32 0BA378034H, 0BA83126FH, 0BA1D4952H, 0BA1D4952H, 0BA51B717H
+   \              0xBA83126F   
+   \              0xBA1D4952   
+   \              0xBA1D4952   
+   \              0xBA51B717   
+   \   00000064   0xBA51B717         DC32 0BA51B717H, 0BA51B717H, 0BA83126FH, 0BA6BEDFAH, 0BA902DE0H
+   \              0xBA51B717   
+   \              0xBA83126F   
+   \              0xBA6BEDFA   
+   \              0xBA902DE0   
+   \   00000078   0xBA6BEDFA         DC32 0BA6BEDFAH, 0BA51B717H, 0BA83126FH, 0BA51B717H, 0BA03126FH
+   \              0xBA51B717   
+   \              0xBA83126F   
+   \              0xBA51B717   
+   \              0xBA03126F   
+   \   0000008C   0xB951B717         DC32 0B951B717H, 0B951B717H, 80000000H, 0B951B717H, 0B8D1B717H
+   \              0xB951B717   
+   \              0x80000000   
+   \              0xB951B717   
+   \              0xB8D1B717   
+   \   000000A0   0xB951B717         DC32 0B951B717H, 0B8D1B717H, 0B8D1B717H, 0H, 38D1B717H, 3A03126FH
+   \              0xB8D1B717   
+   \              0xB8D1B717   
+   \              0x00000000   
+   \              0x38D1B717   
+   \              0x3A03126F   
+   \   000000B8   0x3A51B717         DC32 3A51B717H, 3A51B717H, 3A03126FH, 3A03126FH, 3951B717H, 39D1B717H
+   \              0x3A51B717   
+   \              0x3A03126F   
+   \              0x3A03126F   
+   \              0x3951B717   
+   \              0x39D1B717   
+   \   000000D0   0x3A378034         DC32 3A378034H, 3A378034H, 3A378034H, 3A51B717H, 3A6BEDFAH, 3A51B717H
+   \              0x3A378034   
+   \              0x3A378034   
+   \              0x3A51B717   
+   \              0x3A6BEDFA   
+   \              0x3A51B717   
+   \   000000E8   0x3A51B717         DC32 3A51B717H, 3A902DE0H, 3A902DE0H, 3A902DE0H, 3A83126FH, 3A378034H
+   \              0x3A902DE0   
+   \              0x3A902DE0   
+   \              0x3A902DE0   
+   \              0x3A83126F   
+   \              0x3A378034   
+   \   00000100   0x3A51B717         DC32 3A51B717H, 3A6BEDFAH, 3A6BEDFAH, 3A9D4952H, 3AB78034H, 3A9D4952H
+   \              0x3A6BEDFA   
+   \              0x3A6BEDFA   
+   \              0x3A9D4952   
+   \              0x3AB78034   
+   \              0x3A9D4952   
+   \   00000118   0x3A902DE0         DC32 3A902DE0H, 3A6BEDFAH, 3A51B717H, 3A83126FH, 3A83126FH, 3A83126FH
+   \              0x3A6BEDFA   
+   \              0x3A51B717   
+   \              0x3A83126F   
+   \              0x3A83126F   
+   \              0x3A83126F   
+   \   00000130   0x3A83126F         DC32 3A83126FH, 3A51B717H, 3A1D4952H, 3A6BEDFAH
+   \              0x3A51B717   
+   \              0x3A1D4952   
+   \              0x3A6BEDFA   
+     16            //const float filterb[N] = {-0.0010,   -0.0013,   -0.0016,   -0.0018,   -0.0019,   -0.0019,   -0.0018,   -0.0017,   -0.0014,   -0.0012,   -0.0009,   -0.0007,   -0.0006,   -0.0005,   -0.0004,   -0.0005,   -0.0005,   -0.0006,   -0.0006,   -0.0007,   -0.0007,   -0.0007,   -0.0008,   -0.0008,   -0.0008,   -0.0008,   -0.0009,   -0.0009,   -0.0009,   -0.0009,   -0.0009,   -0.0009,   -0.0008,   -0.0007,   -0.0006,   -0.0005,   -0.0004,   -0.0003,   -0.0002,   -0.0001,   -0.0001,    0.0000,    0.0001,    0.0002,    0.0002,    0.0003,    0.0004,    0.0004,    0.0005,    0.0005,    0.0005,    0.0006,    0.0006,    0.0006,    0.0007,    0.0007,    0.0008,    0.0008,    0.0009,    0.0009,    0.0010,    0.0010,    0.0010,    0.0010,    0.0010,    0.0010,    0.0010,    0.0010,    0.0010,    0.0011,    0.0011,    0.0011,    0.0011,    0.0011,    0.0010,    0.0010,    0.0009,    0.0008,    0.0007,    0.0005};
+
+   \                                 In section .text, align 4, keep-with-next
+     17            float Acc_filters(float xin)
+     18          {
+   \                     Acc_filters:
+   \   00000000   0xB570             PUSH     {R4-R6,LR}
+   \   00000002   0x0005             MOVS     R5,R0
+     19              static float sx = 0;
+     20              float xout = 0;
+   \   00000004   0x2400             MOVS     R4,#+0
+     21              sx = alpha*sx + (1 - alpha) * xin;
+   \   00000006   0x4827             LDR.N    R0,??Acc_filters_0
+   \   00000008   0x6801             LDR      R1,[R0, #+0]
+   \   0000000A   0x4827             LDR.N    R0,??Acc_filters_0+0x4
+   \   0000000C   0x6800             LDR      R0,[R0, #+0]
+   \   0000000E   0x.... 0x....      BL       __aeabi_fmul
+   \   00000012   0x0006             MOVS     R6,R0
+   \   00000014   0xF05F 0x507E      MOVS     R0,#+1065353216
+   \   00000018   0x4922             LDR.N    R1,??Acc_filters_0
+   \   0000001A   0x6809             LDR      R1,[R1, #+0]
+   \   0000001C   0x.... 0x....      BL       __aeabi_fsub
+   \   00000020   0x0029             MOVS     R1,R5
+   \   00000022   0x.... 0x....      BL       __aeabi_fmul
+   \   00000026   0x0031             MOVS     R1,R6
+   \   00000028   0x.... 0x....      BL       __aeabi_fadd
+   \   0000002C   0x491E             LDR.N    R1,??Acc_filters_0+0x4
+   \   0000002E   0x6008             STR      R0,[R1, #+0]
+     22             //sx = xin;
+     23              if(N - 1 > g_point)
+   \   00000030   0x481E             LDR.N    R0,??Acc_filters_0+0x8
+   \   00000032   0x6800             LDR      R0,[R0, #+0]
+   \   00000034   0x284F             CMP      R0,#+79
+   \   00000036   0xDA0D             BGE.N    ??Acc_filters_1
+     24              {
+     25                  filterx[g_point] = sx;
+   \   00000038   0x481C             LDR.N    R0,??Acc_filters_0+0x8
+   \   0000003A   0x6800             LDR      R0,[R0, #+0]
+   \   0000003C   0x491C             LDR.N    R1,??Acc_filters_0+0xC
+   \   0000003E   0x4A1A             LDR.N    R2,??Acc_filters_0+0x4
+   \   00000040   0x6812             LDR      R2,[R2, #+0]
+   \   00000042   0xF841 0x2020      STR      R2,[R1, R0, LSL #+2]
+     26                  g_point ++;
+   \   00000046   0x4819             LDR.N    R0,??Acc_filters_0+0x8
+   \   00000048   0x6800             LDR      R0,[R0, #+0]
+   \   0000004A   0x1C40             ADDS     R0,R0,#+1
+   \   0000004C   0x4917             LDR.N    R1,??Acc_filters_0+0x8
+   \   0000004E   0x6008             STR      R0,[R1, #+0]
+     27              }
+     28              else 
+     29              {
+     30                  int i =1;
+     31                  for(i = 0; i < 79; i++)
+     32                  {
+     33                      filterx[i] = filterx[i+1];
+     34                  }
+     35                  i = 79;
+     36                  filterx[i] = sx;
+     37                  
+     38                  for(i = 0; i < 80; i ++)
+     39                  {
+     40                      xout += filterb[i]*filterx[i];
+     41                  }
+     42                  return xout;
+     43              }
+     44              return xin;
+   \   00000050   0x0028             MOVS     R0,R5
+   \   00000052   0xE025             B.N      ??Acc_filters_2
+   \                     ??Acc_filters_1:
+   \   00000054   0x2501             MOVS     R5,#+1
+   \   00000056   0x2000             MOVS     R0,#+0
+   \   00000058   0x0005             MOVS     R5,R0
+   \   0000005A   0xE007             B.N      ??Acc_filters_3
+   \                     ??Acc_filters_4:
+   \   0000005C   0x4814             LDR.N    R0,??Acc_filters_0+0xC
+   \   0000005E   0xEB10 0x0085      ADDS     R0,R0,R5, LSL #+2
+   \   00000062   0x6840             LDR      R0,[R0, #+4]
+   \   00000064   0x4912             LDR.N    R1,??Acc_filters_0+0xC
+   \   00000066   0xF841 0x0025      STR      R0,[R1, R5, LSL #+2]
+   \   0000006A   0x1C6D             ADDS     R5,R5,#+1
+   \                     ??Acc_filters_3:
+   \   0000006C   0x2D4F             CMP      R5,#+79
+   \   0000006E   0xDBF5             BLT.N    ??Acc_filters_4
+   \   00000070   0x254F             MOVS     R5,#+79
+   \   00000072   0x480F             LDR.N    R0,??Acc_filters_0+0xC
+   \   00000074   0x490C             LDR.N    R1,??Acc_filters_0+0x4
+   \   00000076   0x6809             LDR      R1,[R1, #+0]
+   \   00000078   0xF840 0x1025      STR      R1,[R0, R5, LSL #+2]
+   \   0000007C   0x2500             MOVS     R5,#+0
+   \   0000007E   0xE00C             B.N      ??Acc_filters_5
+   \                     ??Acc_filters_6:
+   \   00000080   0x480C             LDR.N    R0,??Acc_filters_0+0x10
+   \   00000082   0xF850 0x0025      LDR      R0,[R0, R5, LSL #+2]
+   \   00000086   0x490A             LDR.N    R1,??Acc_filters_0+0xC
+   \   00000088   0xF851 0x1025      LDR      R1,[R1, R5, LSL #+2]
+   \   0000008C   0x.... 0x....      BL       __aeabi_fmul
+   \   00000090   0x0021             MOVS     R1,R4
+   \   00000092   0x.... 0x....      BL       __aeabi_fadd
+   \   00000096   0x0004             MOVS     R4,R0
+   \   00000098   0x1C6D             ADDS     R5,R5,#+1
+   \                     ??Acc_filters_5:
+   \   0000009A   0x2D50             CMP      R5,#+80
+   \   0000009C   0xDBF0             BLT.N    ??Acc_filters_6
+   \   0000009E   0x0020             MOVS     R0,R4
+   \                     ??Acc_filters_2:
+   \   000000A0   0xBD70             POP      {R4-R6,PC}       ;; return
+   \   000000A2   0xBF00             Nop      
+   \                     ??Acc_filters_0:
+   \   000000A4   0x........         DC32     alpha
+   \   000000A8   0x........         DC32     ??sx
+   \   000000AC   0x........         DC32     g_point
+   \   000000B0   0x........         DC32     filterx
+   \   000000B4   0x........         DC32     filterb
+     45          }
+
+   \                                 In section .bss, align 4
+   \                     ??sx:
+   \   00000000                      DS8 4
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       16  Acc_filters
+             16 -> __aeabi_fadd
+             16 -> __aeabi_fmul
+             16 -> __aeabi_fsub
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+     184  Acc_filters
+       4  alpha
+     320  filterb
+     320  filterx
+       4  g_point
+       4  sx
+
+ 
+ 328 bytes in section .bss
+ 324 bytes in section .rodata
+ 184 bytes in section .text
+ 
+ 184 bytes of CODE  memory
+ 324 bytes of CONST memory
+ 328 bytes of DATA  memory
+
+Errors: none
+Warnings: none

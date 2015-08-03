@@ -1,0 +1,913 @@
+###############################################################################
+#                                                                             #
+# IAR ELF Linker V6.40.1.53790/W32 for ARM              03/Aug/2015  11:16:16 #
+# Copyright 2007-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Output file  =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\Exe\myproject.out                       #
+#    Map file     =  C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车( #
+#                    改I2C)\bin\Flash\List\myproject.map                      #
+#    Command line =  "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\Balance_Kalman.o"                  #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\HAL_GPIO.o"                        #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\MahonyAHRS.o"                      #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\OpticaSensor.o"                    #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\common.o"                          #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\control.o"                         #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\crt0.o"                            #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\filters.o"                         #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\ftm.o"                             #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\function.o"                        #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\get_data.o"                        #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\hw_gpio.o"                         #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\hw_i2c.o"                          #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\isr.o"                             #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\light.o"                           #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\main.o"                            #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\pit.o"                             #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\ppl.o"                             #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\queue.o"                           #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\start.o"                           #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\sysinit.o"                         #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\uart.o"                            #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\vectors.o"                         #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Obj\wdog.o" --redirect                 #
+#                    _Printf=_PrintfFull --redirect _Scanf=_ScanfFull -o      #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\Exe\myproject.out" --map               #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\bin\Flash\List\myproject.map" --config           #
+#                    "C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车 #
+#                    (改I2C)\src\Project_Settings\Link\Pflash.icf"            #
+#                    --semihosting --entry __iar_program_start --vfe          #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+*******************************************************************************
+*** RUNTIME MODEL ATTRIBUTES
+***
+
+CppFlavor       = *
+__Heap_Handler  = DLMalloc
+__SystemLibrary = DLib
+
+
+*******************************************************************************
+*** PLACEMENT SUMMARY
+***
+
+"A1":  place at 0x00000000 { ro section .intvec };
+"A2":  place at 0x00000410 { ro section .noinit };
+"P1":  place in [from 0x00000000 to 0x00080000] { ro, block CodeRelocate };
+"P2":  place in [from 0x1fff0410 to 0x20010000] {
+          rw, block CodeRelocateRam, block CSTACK, block HEAP };
+
+  Section              Kind        Address     Size  Object
+  -------              ----        -------     ----  ------
+"A1":                                         0x410
+  .intvec              const    0x00000000    0x410  vectors.o [1]
+                              - 0x00000410    0x410
+
+"A2":                                          0x3c
+  .noinit              ro code  0x00000410     0x3c  crt0.o [1]
+                              - 0x0000044c     0x3c
+
+"P1":                                        0x766c
+  .text                ro code  0x0000044c   0x14f4  control.o [1]
+  .text                ro code  0x00001940     0x44  FltToS32.o [4]
+  .text                ro code  0x00001984      0x8  abs.o [3]
+  .text                ro code  0x0000198c    0x148  hw_gpio.o [1]
+  .text                ro code  0x00001ad4     0xe6  FltSub.o [4]
+  .text                ro code  0x00001bba     0x22  zero_init3.o [5]
+  .text                ro code  0x00001bdc     0x24  FltCmpGe.o [4]
+  .text                ro code  0x00001c00     0x32  I32ToFlt.o [4]
+  .text                ro code  0x00001c32      0x2  vectors.o [1]
+  .text                ro code  0x00001c34     0xd8  FltMul.o [4]
+  .text                ro code  0x00001d0c     0x24  FltCmpLe.o [4]
+  .text                ro code  0x00001d30     0x4e  FltToDbl.o [4]
+  .text                ro code  0x00001d80     0xe8  DblAdd.o [4]
+  .text                ro code  0x00001e68    0x1a2  DblMul.o [4]
+  .text                ro code  0x0000200c    0x180  DblSub.o [4]
+  .text                ro code  0x0000218c     0x90  DblToFlt.o [4]
+  .text                ro code  0x0000221c     0xfc  FltDiv.o [4]
+  .text                ro code  0x00002318     0x84  FltAdd.o [4]
+  .text                ro code  0x0000239c     0x30  I32ToDbl.o [4]
+  .text                ro code  0x000023cc    0x246  DblDiv.o [4]
+  .text                ro code  0x00002614     0x2e  DblCmpGe.o [4]
+  .text                ro code  0x00002644    0x394  function.o [1]
+  .text                ro code  0x000029d8     0x4c  DblToI32.o [4]
+  .text                ro code  0x00002a24   0x1318  get_data.o [1]
+  .text                ro code  0x00003d3c    0x110  atan2.o [4]
+  .text                ro code  0x00003e4c    0x5d4  ftm.o [1]
+  .text                ro code  0x00004420     0xf0  sqrt.o [4]
+  .text                ro code  0x00004510      0x6  log.o [4]
+  .text                ro code  0x00004516      0x6  sin.o [4]
+  .text                ro code  0x0000451c      0x6  cos.o [4]
+  .text                ro code  0x00004524    0x132  common.o [1]
+  .text                ro code  0x00004658    0x340  hw_i2c.o [1]
+  .text                ro code  0x00004998    0x228  uart.o [1]
+  .text                ro code  0x00004bc0    0x104  pit.o [1]
+  .text                ro code  0x00004cc4    0x266  OpticaSensor.o [1]
+  .text                ro code  0x00004f2c    0x1c8  HAL_GPIO.o [1]
+  .text                ro code  0x000050f4    0x458  isr.o [1]
+  .text                ro code  0x0000554c     0xb0  Balance_Kalman.o [1]
+  .text                ro code  0x000055fc     0x2e  DblCmpLe.o [4]
+  .text                ro code  0x00005630    0x1e0  xatan.o [4]
+  .text                ro code  0x00005810      0xc  iarEdom.o [5]
+  .text                ro code  0x0000581c    0x2d4  xlog.o [4]
+  .text                ro code  0x00005af0    0x42a  xsin.o [4]
+  .text                ro code  0x00005f1c      0xc  errno.o [3]
+  .text                ro code  0x00005f28     0x42  xdnorm.o [4]
+  .text                ro code  0x00005f6c    0x160  xquad.o [4]
+  .text                ro code  0x000060cc      0x2  xtls.o [3]
+  .text                ro code  0x000060ce     0x7e  xdint.o [4]
+  .text                ro code  0x0000614c     0x20  DblCmpEq.o [4]
+  .text                ro code  0x0000616c    0x1a8  fmod.o [4]
+  .text                ro code  0x00006314    0xbcc  MahonyAHRS.o [1]
+  .text                ro code  0x00006ee0     0x1c  FltCmpEq.o [4]
+  .text                ro code  0x00006efc     0xf6  asin.o [4]
+  .text                ro code  0x00006ff4    0x6b0  main.o [1]
+  Veneer               ro code  0x000076a4      0x8  - Linker created -
+  .text                ro code  0x000076ac    0x1ac  sysinit.o [1]
+  .text                ro code  0x00007858     0xb0  start.o [1]
+  .text                ro code  0x00007908     0x38  wdog.o [1]
+  .data_init                    0x00007940     0xa0  <Block>
+    Initializer bytes  ro data  0x00007940     0xa0  <for .data-1>
+  CodeRelocate                  0x000079e0     0x4c  <Block>
+    Initializer bytes  ro data  0x000079e0     0x4c  <for CodeRelocateRam-1>
+  .text                ro code  0x00007a2c     0x28  data_init3.o [5]
+  .iar.init_table      const    0x00007a54     0x18  - Linker created -
+  .text                ro code  0x00007a6c     0x16  cmain.o [5]
+  .text                ro code  0x00007a82      0x4  low_level_init.o [3]
+  .text                ro code  0x00007a86      0x4  exit.o [3]
+  .text                ro code  0x00007a8c      0xa  cexit.o [5]
+  .text                ro code  0x00007a98     0x14  exit.o [6]
+  .text                ro code  0x00007aac      0xc  cstartup_M.o [5]
+  .rodata              const    0x00007ab8      0x0  zero_init3.o [5]
+                              - 0x00007ab8   0x766c
+
+"P2", part 1 of 3:                             0xf0
+  .data                         0x1fff0410     0xa0  <Block>
+    .data-1                     0x1fff0410     0x9f  <Init block>
+      .data            inited   0x1fff0410      0x4  Balance_Kalman.o [1]
+      .data            inited   0x1fff0414      0x4  Balance_Kalman.o [1]
+      .data            inited   0x1fff0418      0x4  Balance_Kalman.o [1]
+      .data            inited   0x1fff041c      0x4  MahonyAHRS.o [1]
+      .data            inited   0x1fff0420      0x4  MahonyAHRS.o [1]
+      .data            inited   0x1fff0424      0x4  MahonyAHRS.o [1]
+      .data            inited   0x1fff0428      0x4  MahonyAHRS.o [1]
+      .data            inited   0x1fff042c      0x4  control.o [1]
+      .data            inited   0x1fff0430      0x4  control.o [1]
+      .data            inited   0x1fff0434      0x4  control.o [1]
+      .data            inited   0x1fff0438      0x4  control.o [1]
+      .data            inited   0x1fff043c      0x4  control.o [1]
+      .data            inited   0x1fff0440      0x4  control.o [1]
+      .data            inited   0x1fff0444      0x4  control.o [1]
+      .data            inited   0x1fff0448      0x4  control.o [1]
+      .data            inited   0x1fff044c      0x4  control.o [1]
+      .data            inited   0x1fff0450      0x4  control.o [1]
+      .data            inited   0x1fff0454      0x4  control.o [1]
+      .data            inited   0x1fff0458      0x4  control.o [1]
+      .data            inited   0x1fff045c      0x4  control.o [1]
+      .data            inited   0x1fff0460      0x4  control.o [1]
+      .data            inited   0x1fff0464      0x4  control.o [1]
+      .data            inited   0x1fff0468      0x4  control.o [1]
+      .data            inited   0x1fff046c      0x4  control.o [1]
+      .data            inited   0x1fff0470      0x4  control.o [1]
+      .data            inited   0x1fff0474      0x4  control.o [1]
+      .data            inited   0x1fff0478      0x4  control.o [1]
+      .data            inited   0x1fff047c      0x2  control.o [1]
+      .data            inited   0x1fff0480      0x4  control.o [1]
+      .data            inited   0x1fff0484      0x4  control.o [1]
+      .data            inited   0x1fff0488      0x4  control.o [1]
+      .data            inited   0x1fff048c      0x1  control.o [1]
+      .data            inited   0x1fff0490      0x4  control.o [1]
+      .data            inited   0x1fff0494      0x4  control.o [1]
+      .data            inited   0x1fff0498      0x4  control.o [1]
+      .data            inited   0x1fff049c      0x4  control.o [1]
+      .data            inited   0x1fff04a0      0x4  control.o [1]
+      .data            inited   0x1fff04a4      0x4  control.o [1]
+      .data            inited   0x1fff04a8      0x4  control.o [1]
+      .data            inited   0x1fff04ac      0x1  isr.o [1]
+      .data            inited   0x1fff04ad      0x1  isr.o [1]
+      .data            inited   0x1fff04ae      0x1  isr.o [1]
+  CodeRelocateRam               0x1fff04b0     0x4c  <Block>
+    CodeRelocateRam-1           0x1fff04b0     0x4c  <Init block>
+      .textrw          inited   0x1fff04b0     0x4c  sysinit.o [1]
+                              - 0x1fff04fc     0xec
+
+"P2", part 2 of 3:                          0x12220
+  .bss                          0x1fff0500  0x1221f  <Block>
+    .bss               zero     0x1fff0500      0x8  control.o [1]
+    .bss               zero     0x1fff0508      0x8  control.o [1]
+    .bss               zero     0x1fff0510      0x8  control.o [1]
+    .bss               zero     0x1fff0518      0x8  control.o [1]
+    .bss               zero     0x1fff0520      0x8  control.o [1]
+    .bss               zero     0x1fff0528      0x8  control.o [1]
+    .bss               zero     0x1fff0530      0x8  control.o [1]
+    .bss               zero     0x1fff0538      0x8  control.o [1]
+    .bss               zero     0x1fff0540      0x8  get_data.o [1]
+    .bss               zero     0x1fff0548      0x8  get_data.o [1]
+    .bss               zero     0x1fff0550      0x8  isr.o [1]
+    .bss               zero     0x1fff0558      0x8  isr.o [1]
+    .bss               zero     0x1fff0560      0x4  Balance_Kalman.o [1]
+    .bss               zero     0x1fff0564      0x4  Balance_Kalman.o [1]
+    .bss               zero     0x1fff0568      0x4  Balance_Kalman.o [1]
+    .bss               zero     0x1fff056c      0x4  Balance_Kalman.o [1]
+    .bss               zero     0x1fff0570     0x14  HAL_GPIO.o [1]
+    .bss               zero     0x1fff0584      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff0588      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff058c      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff0590      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff0594      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff0598      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff059c      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05a0      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05a4      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05a8      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05ac      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05b0      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05b4      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05b8      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05bc      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05c0      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05c4      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05c8      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05cc      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05d0      0x4  MahonyAHRS.o [1]
+    .bss               zero     0x1fff05d4    0x384  OpticaSensor.o [1]
+    .bss               zero     0x1fff0958      0x4  control.o [1]
+    .bss               zero     0x1fff095c      0x4  control.o [1]
+    .bss               zero     0x1fff0960   0x5dc0  control.o [1]
+    .bss               zero     0x1fff6720   0x5dc0  control.o [1]
+    .bss               zero     0x1fffc4e0   0x5dc0  control.o [1]
+    .bss               zero     0x200022a0      0x4  control.o [1]
+    .bss               zero     0x200022a4      0x4  control.o [1]
+    .bss               zero     0x200022a8      0x4  control.o [1]
+    .bss               zero     0x200022ac      0x4  control.o [1]
+    .bss               zero     0x200022b0      0x4  control.o [1]
+    .bss               zero     0x200022b4      0x4  control.o [1]
+    .bss               zero     0x200022b8      0x4  control.o [1]
+    .bss               zero     0x200022bc      0x4  control.o [1]
+    .bss               zero     0x200022c0      0x4  control.o [1]
+    .bss               zero     0x200022c4      0x4  control.o [1]
+    .bss               zero     0x200022c8      0x4  control.o [1]
+    .bss               zero     0x200022cc      0x4  control.o [1]
+    .bss               zero     0x200022d0      0x4  control.o [1]
+    .bss               zero     0x200022d4      0x4  control.o [1]
+    .bss               zero     0x200022d8      0x4  control.o [1]
+    .bss               zero     0x200022dc      0x4  control.o [1]
+    .bss               zero     0x200022e0      0x4  control.o [1]
+    .bss               zero     0x200022e4      0x4  control.o [1]
+    .bss               zero     0x200022e8      0x4  control.o [1]
+    .bss               zero     0x200022ec      0x4  control.o [1]
+    .bss               zero     0x200022f0      0x4  control.o [1]
+    .bss               zero     0x200022f4      0x4  control.o [1]
+    .bss               zero     0x200022f8      0x4  control.o [1]
+    .bss               zero     0x200022fc      0x4  control.o [1]
+    .bss               zero     0x20002300      0x4  control.o [1]
+    .bss               zero     0x20002304      0x4  control.o [1]
+    .bss               zero     0x20002308      0x4  control.o [1]
+    .bss               zero     0x2000230c      0x4  control.o [1]
+    .bss               zero     0x20002310      0x4  control.o [1]
+    .bss               zero     0x20002314      0x4  control.o [1]
+    .bss               zero     0x20002318      0x4  control.o [1]
+    .bss               zero     0x2000231c      0x4  control.o [1]
+    .bss               zero     0x20002320      0x4  control.o [1]
+    .bss               zero     0x20002324      0x4  control.o [1]
+    .bss               zero     0x20002328      0x4  control.o [1]
+    .bss               zero     0x2000232c      0x4  control.o [1]
+    .bss               zero     0x20002330      0x4  control.o [1]
+    .bss               zero     0x20002334      0x4  control.o [1]
+    .bss               zero     0x20002338      0x4  control.o [1]
+    .bss               zero     0x2000233c      0x4  control.o [1]
+    .bss               zero     0x20002340      0x4  control.o [1]
+    .bss               zero     0x20002344      0x4  control.o [1]
+    .bss               zero     0x20002348      0x4  control.o [1]
+    .bss               zero     0x2000234c      0x4  control.o [1]
+    .bss               zero     0x20002350      0x4  control.o [1]
+    .bss               zero     0x20002354      0x4  control.o [1]
+    .bss               zero     0x20002358      0x4  control.o [1]
+    .bss               zero     0x2000235c      0x4  control.o [1]
+    .bss               zero     0x20002360      0x4  control.o [1]
+    .bss               zero     0x20002364      0x4  control.o [1]
+    .bss               zero     0x20002368      0x4  control.o [1]
+    .bss               zero     0x2000236c      0x4  control.o [1]
+    .bss               zero     0x20002370      0x4  control.o [1]
+    .bss               zero     0x20002374      0x4  control.o [1]
+    .bss               zero     0x20002378      0x4  control.o [1]
+    .bss               zero     0x2000237c      0x4  control.o [1]
+    .bss               zero     0x20002380      0x4  control.o [1]
+    .bss               zero     0x20002384      0x4  control.o [1]
+    .bss               zero     0x20002388      0x4  control.o [1]
+    .bss               zero     0x2000238c      0x4  control.o [1]
+    .bss               zero     0x20002390      0x4  ftm.o [1]
+    .bss               zero     0x20002394      0x4  function.o [1]
+    .bss               zero     0x20002398      0x8  get_data.o [1]
+    .bss               zero     0x200023a0      0x4  get_data.o [1]
+    .bss               zero     0x200023a4      0x4  get_data.o [1]
+    .bss               zero     0x200023a8      0x4  get_data.o [1]
+    .bss               zero     0x200023ac      0x4  get_data.o [1]
+    .bss               zero     0x200023b0      0x4  get_data.o [1]
+    .bss               zero     0x200023b4      0x4  get_data.o [1]
+    .bss               zero     0x200023b8      0x4  get_data.o [1]
+    .bss               zero     0x200023bc      0x4  get_data.o [1]
+    .bss               zero     0x200023c0      0x4  get_data.o [1]
+    .bss               zero     0x200023c4      0x4  get_data.o [1]
+    .bss               zero     0x200023c8      0x4  get_data.o [1]
+    .bss               zero     0x200023cc      0x4  get_data.o [1]
+    .bss               zero     0x200023d0      0x4  get_data.o [1]
+    .bss               zero     0x200023d4      0x4  get_data.o [1]
+    .bss               zero     0x200023d8      0x4  get_data.o [1]
+    .bss               zero     0x200023dc      0x4  get_data.o [1]
+    .bss               zero     0x200023e0      0x4  get_data.o [1]
+    .bss               zero     0x200023e4      0x4  get_data.o [1]
+    .bss               zero     0x200023e8      0x4  get_data.o [1]
+    .bss               zero     0x200023ec      0x4  get_data.o [1]
+    .bss               zero     0x200023f0      0x4  get_data.o [1]
+    .bss               zero     0x200023f4      0x4  get_data.o [1]
+    .bss               zero     0x200023f8      0x4  get_data.o [1]
+    .bss               zero     0x200023fc      0x4  get_data.o [1]
+    .bss               zero     0x20002400      0x4  get_data.o [1]
+    .bss               zero     0x20002404      0x4  get_data.o [1]
+    .bss               zero     0x20002408      0x4  get_data.o [1]
+    .bss               zero     0x2000240c      0x4  get_data.o [1]
+    .bss               zero     0x20002410      0x4  get_data.o [1]
+    .bss               zero     0x20002414      0x4  get_data.o [1]
+    .bss               zero     0x20002418      0x4  get_data.o [1]
+    .bss               zero     0x2000241c      0x4  get_data.o [1]
+    .bss               zero     0x20002420      0x4  get_data.o [1]
+    .bss               zero     0x20002424      0x4  get_data.o [1]
+    .bss               zero     0x20002428      0x4  get_data.o [1]
+    .bss               zero     0x2000242c      0x4  get_data.o [1]
+    .bss               zero     0x20002430      0x4  get_data.o [1]
+    .bss               zero     0x20002434      0x4  get_data.o [1]
+    .bss               zero     0x20002438      0x4  get_data.o [1]
+    .bss               zero     0x2000243c      0xc  get_data.o [1]
+    .bss               zero     0x20002448      0xc  get_data.o [1]
+    .bss               zero     0x20002454      0xc  get_data.o [1]
+    .bss               zero     0x20002460      0x4  get_data.o [1]
+    .bss               zero     0x20002464      0x4  get_data.o [1]
+    .bss               zero     0x20002468      0x4  get_data.o [1]
+    .bss               zero     0x2000246c      0xc  get_data.o [1]
+    .bss               zero     0x20002478      0xc  get_data.o [1]
+    .bss               zero     0x20002484      0xc  get_data.o [1]
+    .bss               zero     0x20002490     0x50  get_data.o [1]
+    .bss               zero     0x200024e0     0x50  get_data.o [1]
+    .bss               zero     0x20002530     0x50  get_data.o [1]
+    .bss               zero     0x20002580      0x4  get_data.o [1]
+    .bss               zero     0x20002584      0x4  get_data.o [1]
+    .bss               zero     0x20002588      0x4  get_data.o [1]
+    .bss               zero     0x2000258c      0x4  get_data.o [1]
+    .bss               zero     0x20002590      0x4  get_data.o [1]
+    .bss               zero     0x20002594      0x4  get_data.o [1]
+    .bss               zero     0x20002598     0x50  get_data.o [1]
+    .bss               zero     0x200025e8     0x50  get_data.o [1]
+    .bss               zero     0x20002638     0x50  get_data.o [1]
+    .bss               zero     0x20002688      0x4  get_data.o [1]
+    .bss               zero     0x2000268c      0x4  get_data.o [1]
+    .bss               zero     0x20002690      0x4  get_data.o [1]
+    .bss               zero     0x20002694      0x4  get_data.o [1]
+    .bss               zero     0x20002698      0x4  get_data.o [1]
+    .bss               zero     0x2000269c      0x4  get_data.o [1]
+    .bss               zero     0x200026a0      0x4  get_data.o [1]
+    .bss               zero     0x200026a4      0x4  isr.o [1]
+    .bss               zero     0x200026a8     0x1c  isr.o [1]
+    .bss               zero     0x200026c4     0x1c  isr.o [1]
+    .bss               zero     0x200026e0      0x4  isr.o [1]
+    .bss               zero     0x200026e4      0x4  isr.o [1]
+    .bss               zero     0x200026e8      0x4  isr.o [1]
+    .bss               zero     0x200026ec      0x4  isr.o [1]
+    .bss               zero     0x200026f0      0x4  isr.o [1]
+    .bss               zero     0x200026f4      0x4  isr.o [1]
+    .bss               zero     0x200026f8      0x4  sysinit.o [1]
+    .bss               zero     0x200026fc      0x4  sysinit.o [1]
+    .bss               zero     0x20002700      0x4  sysinit.o [1]
+    .bss               zero     0x20002704      0x2  isr.o [1]
+    .bss               zero     0x20002706      0x2  isr.o [1]
+    .bss               zero     0x20002708      0x1  control.o [1]
+    .bss               zero     0x20002709      0x1  control.o [1]
+    .bss               zero     0x2000270a      0x1  control.o [1]
+    .bss               zero     0x2000270b      0x1  control.o [1]
+    .bss               zero     0x2000270c      0x1  function.o [1]
+    .bss               zero     0x2000270d      0x1  function.o [1]
+    .bss               zero     0x2000270e      0x1  get_data.o [1]
+    .bss               zero     0x2000270f      0x1  get_data.o [1]
+    .bss               zero     0x20002710      0x1  isr.o [1]
+    .bss               zero     0x20002711      0x1  isr.o [1]
+    .bss               zero     0x20002712      0x1  isr.o [1]
+    .bss               zero     0x20002713      0x1  isr.o [1]
+    .bss               zero     0x20002714      0x1  isr.o [1]
+    .bss               zero     0x20002715      0x1  isr.o [1]
+    .bss               zero     0x20002716      0x1  isr.o [1]
+    .bss               zero     0x20002717      0x1  isr.o [1]
+    .bss               zero     0x20002718      0x1  isr.o [1]
+    .bss               zero     0x20002719      0x1  isr.o [1]
+    .bss               zero     0x2000271a      0x1  isr.o [1]
+    .bss               zero     0x2000271b      0x1  isr.o [1]
+    .bss               zero     0x2000271c      0x1  isr.o [1]
+    .bss               zero     0x2000271d      0x1  isr.o [1]
+    .bss               zero     0x2000271e      0x1  isr.o [1]
+                              - 0x2000271f  0x1221f
+
+"P2", part 3 of 3:                              0x4
+  __DLIB_PERTHREAD     zero     0x20002720      0x4  errno.o [3]
+                              - 0x20002724      0x4
+
+
+*******************************************************************************
+*** INIT TABLE
+***
+
+          Address     Size
+          -------     ----
+Zero (__iar_zero_init3)
+    2 destination ranges, total size 0x12223:
+          0x1fff0500  0x1221f
+          0x20002720      0x4
+
+
+
+*******************************************************************************
+*** MODULE SUMMARY
+***
+
+    Module            ro code  rw code  ro data  rw data
+    ------            -------  -------  -------  -------
+C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车(改I2C)\bin\Flash\Obj: [1]
+    Balance_Kalman.o      176                12       28
+    HAL_GPIO.o            456                         20
+    MahonyAHRS.o        3 020                16       96
+    OpticaSensor.o        614                        900
+    common.o              306
+    control.o           5 364               128   72 439
+    crt0.o                 60
+    ftm.o               1 492                          4
+    function.o            916                          6
+    get_data.o          4 888                        798
+    hw_gpio.o             328
+    hw_i2c.o              832
+    isr.o               1 112                 3      122
+    main.o              1 712
+    pit.o                 260
+    start.o               176
+    sysinit.o             428       76       76       12
+    uart.o                552
+    vectors.o               2             1 040
+    wdog.o                 56
+    ----------------------------------------------------
+    Total:             22 750       76    1 275   74 425
+
+command line: [2]
+    ----------------------------------------------------
+    Total:
+
+dl7M_tln.a: [3]
+    abs.o                   8
+    errno.o                12                          4
+    exit.o                  4
+    low_level_init.o        4
+    xtls.o                  2
+    ----------------------------------------------------
+    Total:                 30                          4
+
+m7M_tl.a: [4]
+    DblAdd.o              232
+    DblCmpEq.o             32
+    DblCmpGe.o             46
+    DblCmpLe.o             46
+    DblDiv.o              582
+    DblMul.o              418
+    DblSub.o              384
+    DblToFlt.o            144
+    DblToI32.o             76
+    FltAdd.o              132
+    FltCmpEq.o             28
+    FltCmpGe.o             36
+    FltCmpLe.o             36
+    FltDiv.o              252
+    FltMul.o              216
+    FltSub.o              230
+    FltToDbl.o             78
+    FltToS32.o             68
+    I32ToDbl.o             48
+    I32ToFlt.o             50
+    asin.o                246
+    atan2.o               272
+    cos.o                   6
+    fmod.o                424
+    log.o                   6
+    sin.o                   6
+    sqrt.o                240
+    xatan.o               480
+    xdint.o               126
+    xdnorm.o               66
+    xlog.o                724
+    xquad.o               352
+    xsin.o              1 066
+    ----------------------------------------------------
+    Total:              7 148
+
+rt7M_tl.a: [5]
+    cexit.o                10
+    cmain.o                22
+    cstartup_M.o           12
+    data_init3.o           40
+    iarEdom.o              12
+    zero_init3.o           34
+    ----------------------------------------------------
+    Total:                130
+
+shb_l.a: [6]
+    exit.o                 20
+    ----------------------------------------------------
+    Total:                 20
+
+    Gaps                   30                          5
+    Linker created          8                25
+--------------------------------------------------------
+    Grand Total:       30 116       76    1 300   74 434
+
+
+*******************************************************************************
+*** ENTRY LIST
+***
+
+Entry                      Address    Size  Type      Object
+-----                      -------    ----  ----      ------
+.bss$$Base              0x1fff0500           --   Gb  - Linker created -
+.bss$$Limit             0x2000271f           --   Gb  - Linker created -
+.data$$Base             0x1fff0410           --   Gb  - Linker created -
+.data$$Limit            0x1fff04b0           --   Gb  - Linker created -
+.data_init$$Base        0x00007940           --   Gb  - Linker created -
+.data_init$$Limit       0x000079e0           --   Gb  - Linker created -
+?main                   0x00007a6d          Code  Gb  cmain.o [5]
+AnalogSPI               0x00004cc5    0x34  Code  Gb  OpticaSensor.o [1]
+Angle_X                 0x1fff05bc     0x4  Data  Gb  MahonyAHRS.o [1]
+Angle_X0                0x1fff05c8     0x4  Data  Gb  MahonyAHRS.o [1]
+Angle_Y                 0x1fff05c0     0x4  Data  Gb  MahonyAHRS.o [1]
+Angle_Y0                0x1fff05cc     0x4  Data  Gb  MahonyAHRS.o [1]
+Angle_Z                 0x1fff05c4     0x4  Data  Gb  MahonyAHRS.o [1]
+Angle_Z0                0x1fff05d0     0x4  Data  Gb  MahonyAHRS.o [1]
+Angle_accx              0x200023a0     0x4  Data  Gb  get_data.o [1]
+Angle_accx0             0x200023f4     0x4  Data  Gb  get_data.o [1]
+Angle_accy              0x200023a4     0x4  Data  Gb  get_data.o [1]
+Angle_accy0             0x200023f8     0x4  Data  Gb  get_data.o [1]
+Angle_accz              0x200023a8     0x4  Data  Gb  get_data.o [1]
+Angle_accz0             0x200023fc     0x4  Data  Gb  get_data.o [1]
+Angle_gyrox             0x200023b8     0x4  Data  Gb  get_data.o [1]
+Angle_gyrox0            0x200023e8     0x4  Data  Gb  get_data.o [1]
+Angle_gyroy             0x200023bc     0x4  Data  Gb  get_data.o [1]
+Angle_gyroy0            0x200023ec     0x4  Data  Gb  get_data.o [1]
+Angle_gyroz             0x200023c0     0x4  Data  Gb  get_data.o [1]
+Angle_gyroz0            0x200023f0     0x4  Data  Gb  get_data.o [1]
+Axis_x                  0x1fff0550     0x8  Data  Gb  isr.o [1]
+Axis_y                  0x1fff0558     0x8  Data  Gb  isr.o [1]
+BASE_VALUE              0x1fff047c     0x2  Data  Gb  control.o [1]
+BUF                     0x20002398     0x8  Data  Gb  get_data.o [1]
+Backup_landing          0x20002715     0x1  Data  Gb  isr.o [1]
+BaseHeight              0x20002706     0x2  Data  Gb  isr.o [1]
+CH                      0x2000271c     0x1  Data  Gb  isr.o [1]
+CheckHeightSensor       0x0000279d    0xac  Code  Gb  function.o [1]
+CodeRelocate$$Base      0x000079e0           --   Gb  - Linker created -
+CodeRelocate$$Limit     0x00007a2c           --   Gb  - Linker created -
+CodeRelocateRam$$Base   0x1fff04b0           --   Gb  - Linker created -
+CodeRelocateRam$$Limit  0x1fff04fc           --   Gb  - Linker created -
+Delay_10us              0x00002a45     0xe  Code  Gb  get_data.o [1]
+Delay_ms                0x00002a25    0x20  Code  Gb  get_data.o [1]
+DeltX                   0x2000270e     0x1  Data  Gb  get_data.o [1]
+DeltY                   0x2000270f     0x1  Data  Gb  get_data.o [1]
+Dot_gyro_x              0x200023ac     0x4  Data  Gb  get_data.o [1]
+Dot_gyro_x0             0x200023dc     0x4  Data  Gb  get_data.o [1]
+Dot_gyro_y              0x200023b0     0x4  Data  Gb  get_data.o [1]
+Dot_gyro_y0             0x200023e0     0x4  Data  Gb  get_data.o [1]
+Dot_gyro_z              0x200023b4     0x4  Data  Gb  get_data.o [1]
+Dot_gyro_z0             0x200023e4     0x4  Data  Gb  get_data.o [1]
+Dot_xacc                0x2000240c     0x4  Data  Gb  get_data.o [1]
+Dot_xacc0               0x20002424     0x4  Data  Gb  get_data.o [1]
+Dot_xgyro               0x20002400     0x4  Data  Gb  get_data.o [1]
+Dot_xgyro0              0x20002418     0x4  Data  Gb  get_data.o [1]
+Dot_yacc                0x20002410     0x4  Data  Gb  get_data.o [1]
+Dot_yacc0               0x20002428     0x4  Data  Gb  get_data.o [1]
+Dot_ygyro               0x20002404     0x4  Data  Gb  get_data.o [1]
+Dot_ygyro0              0x2000241c     0x4  Data  Gb  get_data.o [1]
+Dot_zacc                0x20002414     0x4  Data  Gb  get_data.o [1]
+Dot_zacc0               0x2000242c     0x4  Data  Gb  get_data.o [1]
+Dot_zgyro               0x20002408     0x4  Data  Gb  get_data.o [1]
+Dot_zgyro0              0x20002420     0x4  Data  Gb  get_data.o [1]
+Fly_Mode                0x1fff04ac     0x1  Data  Gb  isr.o [1]
+GPIO_ISR                0x1fff0570    0x14  Data  Gb  HAL_GPIO.o [1]
+Height                  0x20002704     0x2  Data  Gb  isr.o [1]
+Height_update           0x20002716     0x1  Data  Gb  isr.o [1]
+High                    0x200026e0     0x4  Data  Gb  isr.o [1]
+High_update             0x00002867    0x46  Code  Gb  function.o [1]
+InitBMA180              0x00003347   0x11e  Code  Gb  get_data.o [1]
+InitBMAsteer            0x00003741   0x11e  Code  Gb  get_data.o [1]
+InitMPU3205             0x00002a53    0x6c  Code  Gb  get_data.o [1]
+InitMPUsteer            0x00002abf    0x6c  Code  Gb  get_data.o [1]
+InitOpticalFlowSensor   0x00004ee9    0x42  Code  Gb  OpticaSensor.o [1]
+Initial                 0x00002661   0x13c  Code  Gb  function.o [1]
+Integral_high           0x2000270c     0x1  Data  Gb  function.o [1]
+K1                      0x1fff056c     0x4  Data  Gb  Balance_Kalman.o [1]
+Kd1                     0x1fff043c     0x4  Data  Gb  control.o [1]
+Kd2                     0x1fff0440     0x4  Data  Gb  control.o [1]
+Kd3                     0x1fff0444     0x4  Data  Gb  control.o [1]
+Kd4                     0x1fff0448     0x4  Data  Gb  control.o [1]
+Kdx                     0x1fff046c     0x4  Data  Gb  control.o [1]
+Kdy                     0x1fff0470     0x4  Data  Gb  control.o [1]
+Ki1                     0x1fff044c     0x4  Data  Gb  control.o [1]
+Ki2                     0x1fff0450     0x4  Data  Gb  control.o [1]
+Ki3                     0x1fff0454     0x4  Data  Gb  control.o [1]
+Ki4                     0x1fff0458     0x4  Data  Gb  control.o [1]
+Kix                     0x1fff0464     0x4  Data  Gb  control.o [1]
+Kiy                     0x1fff0468     0x4  Data  Gb  control.o [1]
+Kp1                     0x1fff042c     0x4  Data  Gb  control.o [1]
+Kp2                     0x1fff0430     0x4  Data  Gb  control.o [1]
+Kp3                     0x1fff0434     0x4  Data  Gb  control.o [1]
+Kp4                     0x1fff0438     0x4  Data  Gb  control.o [1]
+Kx                      0x1fff045c     0x4  Data  Gb  control.o [1]
+Ky                      0x1fff0460     0x4  Data  Gb  control.o [1]
+LPLD_FTM0_MOD           0x20002390     0x4  Data  Gb  ftm.o [1]
+LPLD_GPIO_Init          0x00004f2d   0x11e  Code  Gb  HAL_GPIO.o [1]
+LPLD_GPIO_Isr           0x00005095    0x26  Code  Gb  HAL_GPIO.o [1]
+LPLD_GPIO_SetIsr        0x0000504b    0x4a  Code  Gb  HAL_GPIO.o [1]
+Landing                 0x20002712     0x1  Data  Gb  isr.o [1]
+MahonyAHRSupdateIMU     0x00006315   0x5aa  Code  Gb  MahonyAHRS.o [1]
+MahonyAHRSupdateIMU1    0x000068e5   0x56e  Code  Gb  MahonyAHRS.o [1]
+PORTE_isr               0x0000545b    0x70  Code  Gb  isr.o [1]
+PWM_X                   0x1fff0490     0x4  Data  Lc  control.o [1]
+PWM_Y                   0x1fff0494     0x4  Data  Lc  control.o [1]
+P_a1                    0x1fff0410     0x4  Data  Gb  Balance_Kalman.o [1]
+P_b1                    0x1fff0568     0x4  Data  Gb  Balance_Kalman.o [1]
+Pit_update              0x20002711     0x1  Data  Gb  isr.o [1]
+PointX                  0x200022f4     0x4  Data  Gb  control.o [1]
+PointY                  0x200022f8     0x4  Data  Gb  control.o [1]
+Q1                      0x1fff0414     0x4  Data  Gb  Balance_Kalman.o [1]
+Q_x                     0x200023c4     0x4  Data  Gb  get_data.o [1]
+Q_x1                    0x200023d0     0x4  Data  Gb  get_data.o [1]
+Q_y                     0x200023c8     0x4  Data  Gb  get_data.o [1]
+Q_y1                    0x200023d4     0x4  Data  Gb  get_data.o [1]
+Q_z                     0x200023cc     0x4  Data  Gb  get_data.o [1]
+Q_z1                    0x200023d8     0x4  Data  Gb  get_data.o [1]
+Quadrotor_pid           0x0000044d  0x14f4  Code  Gb  control.o [1]
+R1                      0x1fff0418     0x4  Data  Gb  Balance_Kalman.o [1]
+RE_X                    0x20002304     0x4  Data  Gb  control.o [1]
+RE_Y                    0x20002308     0x4  Data  Gb  control.o [1]
+ReadANDS3080            0x00003ac1    0xe4  Code  Gb  get_data.o [1]
+ReadBMA180              0x00003465   0x27c  Code  Gb  get_data.o [1]
+ReadBMAsteer            0x0000385f   0x252  Code  Gb  get_data.o [1]
+ReadByte                0x00004e4d    0x18  Code  Gb  OpticaSensor.o [1]
+ReadMPU3205             0x00002f39   0x40e  Code  Gb  get_data.o [1]
+ReadMPUsteer            0x00002b2b   0x40e  Code  Gb  get_data.o [1]
+Read_Sensor_Byte        0x00004de5    0x48  Code  Gb  OpticaSensor.o [1]
+Region$$Table$$Base     0x00007a54           --   Gb  - Linker created -
+Region$$Table$$Limit    0x00007a6c           --   Gb  - Linker created -
+SendDataToGUI           0x000028ad    0xc6  Code  Gb  function.o [1]
+SendFloat               0x00002849    0x1e  Code  Gb  function.o [1]
+Send_flag               0x20002717     0x1  Data  Gb  isr.o [1]
+Sensor_End              0x00004d11     0xe  Code  Gb  OpticaSensor.o [1]
+Sensor_Start            0x00004cf9    0x18  Code  Gb  OpticaSensor.o [1]
+SetIrqsPrio             0x00002645    0x1c  Code  Gb  function.o [1]
+Start_flag              0x20002713     0x1  Data  Gb  isr.o [1]
+SteerPWM_init           0x0000417d    0x2a  Code  Gb  ftm.o [1]
+Stop_flag               0x20002714     0x1  Data  Gb  isr.o [1]
+SumDeltX                0x1fff0540     0x8  Data  Gb  get_data.o [1]
+SumDeltY                0x1fff0548     0x8  Data  Gb  get_data.o [1]
+TEST1                   0x200022b0     0x4  Data  Lc  control.o [1]
+TEST2                   0x200022b4     0x4  Data  Lc  control.o [1]
+TEST3                   0x200022b8     0x4  Data  Lc  control.o [1]
+Time_counter            0x200026a4     0x4  Data  Gb  isr.o [1]
+WriteByte               0x00004e65    0x1c  Code  Gb  OpticaSensor.o [1]
+Write_Address           0x00004d21    0x64  Code  Gb  OpticaSensor.o [1]
+Write_Data              0x00004d85    0x60  Code  Gb  OpticaSensor.o [1]
+X_a1                    0x1fff0564     0x4  Data  Gb  Balance_Kalman.o [1]
+X_b1                    0x1fff0560     0x4  Data  Gb  Balance_Kalman.o [1]
+__BOOT_STACK_ADDRESS {Abs}
+                        0x2000fff8           --   Gb  command line/config [2]
+__VECTOR_RAM {Abs}      0x1fff0000           --   Gb  command line/config [2]
+__VECTOR_TABLE {Abs}    0x00000000           --   Gb  command line/config [2]
+__aeabi_cdcmpeq         0x0000614d          Code  Gb  DblCmpEq.o [4]
+__aeabi_cdcmple         0x000055fd          Code  Gb  DblCmpLe.o [4]
+__aeabi_cdrcmple        0x00002615          Code  Gb  DblCmpGe.o [4]
+__aeabi_cfcmpeq         0x00006ee1          Code  Gb  FltCmpEq.o [4]
+__aeabi_cfcmple         0x00001d0d          Code  Gb  FltCmpLe.o [4]
+__aeabi_cfrcmple        0x00001bdd          Code  Gb  FltCmpGe.o [4]
+__aeabi_d2f             0x0000218d          Code  Gb  DblToFlt.o [4]
+__aeabi_d2iz            0x000029d9          Code  Gb  DblToI32.o [4]
+__aeabi_dadd            0x00001d81          Code  Gb  DblAdd.o [4]
+__aeabi_ddiv            0x000023cd          Code  Gb  DblDiv.o [4]
+__aeabi_dmul            0x00001e69          Code  Gb  DblMul.o [4]
+__aeabi_dsub            0x0000200d          Code  Gb  DblSub.o [4]
+__aeabi_errno_addr      0x00005f1d     0x6  Code  Gb  errno.o [3]
+__aeabi_f2d             0x00001d31          Code  Gb  FltToDbl.o [4]
+__aeabi_f2iz            0x00001941          Code  Gb  FltToS32.o [4]
+__aeabi_fadd            0x00002319          Code  Gb  FltAdd.o [4]
+__aeabi_fdiv            0x0000221d          Code  Gb  FltDiv.o [4]
+__aeabi_fmul            0x00001c35          Code  Gb  FltMul.o [4]
+__aeabi_fsub            0x00001ad5          Code  Gb  FltSub.o [4]
+__aeabi_i2d             0x0000239d          Code  Gb  I32ToDbl.o [4]
+__aeabi_i2f             0x00001c01          Code  Gb  I32ToFlt.o [4]
+__aeabi_ui2d            0x000023b1          Code  Gb  I32ToDbl.o [4]
+__aeabi_ui2f            0x00001c15          Code  Gb  I32ToFlt.o [4]
+__cmain                 0x00007a6d          Code  Gb  cmain.o [5]
+__exit                  0x00007a99    0x14  Code  Gb  exit.o [6]
+__iar_Atan              0x00005631   0x148  Code  Gb  xatan.o [4]
+__iar_Dint              0x000060cf    0x7e  Code  Gb  xdint.o [4]
+__iar_Dnorm             0x00005f29    0x42  Code  Gb  xdnorm.o [4]
+__iar_Errno             0x20002720     0x4  Data  Gb  errno.o [3]
+__iar_Log               0x0000581d   0x248  Code  Gb  xlog.o [4]
+__iar_Quad              0x00005f6d   0x160  Code  Gb  xquad.o [4]
+__iar_Sin               0x00005af1   0x424  Code  Gb  xsin.o [4]
+__iar_d2uiz             0x00002a05          Code  Gb  DblToI32.o [4]
+__iar_dadd              0x00001d95          Code  Gb  DblAdd.o [4]
+__iar_data_init3        0x00007a2d    0x28  Code  Gb  data_init3.o [5]
+__iar_dlib_perthread_access
+                        0x000060cd     0x2  Code  Gb  xtls.o [3]
+__iar_dsub              0x00002021          Code  Gb  DblSub.o [4]
+__iar_dsubStart         0x00002033          Code  Gb  DblSub.o [4]
+__iar_edom              0x00005811          Code  Gb  iarEdom.o [5]
+__iar_fadd              0x00002329          Code  Gb  FltAdd.o [4]
+__iar_fmod              0x0000616d          Code  Gb  fmod.o [4]
+__iar_fmodl             0x0000616d          Code  Gb  fmod.o [4]
+__iar_fsub              0x00001ae5          Code  Gb  FltSub.o [4]
+__iar_fsubStart         0x00001af5          Code  Gb  FltSub.o [4]
+__iar_program_start     0x00007aad          Code  Gb  cstartup_M.o [5]
+__iar_sqrt              0x00004421          Code  Gb  sqrt.o [4]
+__iar_ui2d              0x000023b5          Code  Gb  I32ToDbl.o [4]
+__iar_ui2f              0x00001c19          Code  Gb  I32ToFlt.o [4]
+__iar_zero_init3        0x00001bbb    0x22  Code  Gb  zero_init3.o [5]
+__low_level_init        0x00007a83     0x4  Code  Gb  low_level_init.o [3]
+__startup               0x00000411          Code  Gb  crt0.o [1]
+__vector_table          0x00000000   0x410  Data  Gb  vectors.o [1]
+_call_main              0x00007a79          Code  Gb  cmain.o [5]
+_exit                   0x00007a8d          Code  Gb  cexit.o [5]
+_flag_                  0x1fff048c     0x1  Data  Gb  control.o [1]
+_main                   0x00007a7f          Code  Gb  cmain.o [5]
+a                       0x000057d0    0x40  Data  Lc  xatan.o [4]
+abs                     0x00001985     0x8  Code  Gb  abs.o [3]
+asin                    0x00006efd    0xf0  Code  Gb  asin.o [4]
+atan2                   0x00003d3d   0x110  Code  Gb  atan2.o [4]
+camflag                 0x20002708     0x1  Data  Gb  control.o [1]
+common_startup          0x0000786d    0x74  Code  Gb  start.o [1]
+core_clk_khz            0x200026f8     0x4  Data  Gb  sysinit.o [1]
+core_clk_mhz            0x200026fc     0x4  Data  Gb  sysinit.o [1]
+cos                     0x0000451d     0x6  Code  Gb  cos.o [4]
+cx                      0x200022dc     0x4  Data  Gb  control.o [1]
+cy                      0x200022e0     0x4  Data  Gb  control.o [1]
+cz                      0x200022e4     0x4  Data  Gb  control.o [1]
+data                    0x1fff05d4   0x384  Data  Gb  OpticaSensor.o [1]
+dataLencounter          0x200022a8     0x4  Data  Gb  control.o [1]
+data_high               0x200026a8    0x1c  Data  Gb  isr.o [1]
+datas_mid               0x200026c4    0x1c  Data  Gb  isr.o [1]
+default_isr             0x00001c33     0x2  Code  Gb  vectors.o [1]
+des_PointX              0x200022fc     0x4  Data  Lc  control.o [1]
+des_PointY              0x20002300     0x4  Data  Lc  control.o [1]
+disable_irq             0x000045bb    0x5a  Code  Gb  common.o [1]
+disable_pit_interrupt   0x00004c6b    0x4c  Code  Gb  pit.o [1]
+enable_irq              0x0000452b    0x90  Code  Gb  common.o [1]
+enable_pit_interrupt    0x00004c1f    0x4c  Code  Gb  pit.o [1]
+enableuartreint         0x00004b5d    0x14  Code  Gb  uart.o [1]
+errX                    0x1fff0958     0x4  Data  Gb  control.o [1]
+errY                    0x1fff095c     0x4  Data  Gb  control.o [1]
+err_angX                0x200022c0     0x4  Data  Lc  control.o [1]
+err_angY                0x200022c4     0x4  Data  Lc  control.o [1]
+exit                    0x00007a87     0x4  Code  Gb  exit.o [3]
+fb_clk_init             0x0000770b    0x16  Code  Gb  sysinit.o [1]
+fmod                    0x0000616d          Code  Gb  fmod.o [4]
+fmodl                   0x0000616d          Code  Gb  fmod.o [4]
+ftm0_pwm_change_duty    0x00004323    0x32  Code  Gb  ftm.o [1]
+ftm0_pwm_init           0x000041a7    0xf2  Code  Gb  ftm.o [1]
+ftm0_pwm_open           0x00004299    0x8a  Code  Gb  ftm.o [1]
+hw_FTM_init             0x00003e4d   0x256  Code  Gb  ftm.o [1]
+hw_gpio_get             0x00001a29    0x16  Code  Gb  hw_gpio.o [1]
+hw_gpio_get_port_addr   0x00001a55    0x2c  Code  Lc  hw_gpio.o [1]
+hw_gpio_get_pt_addr     0x00001a81    0x2c  Code  Lc  hw_gpio.o [1]
+hw_gpio_init            0x0000198d    0x72  Code  Gb  hw_gpio.o [1]
+hw_gpio_reverse         0x00001a3f    0x16  Code  Gb  hw_gpio.o [1]
+hw_gpio_set             0x000019ff    0x2a  Code  Gb  hw_gpio.o [1]
+hw_i2c_get_base_address
+                        0x00004959    0x14  Code  Gb  hw_i2c.o [1]
+hw_i2c_init             0x00004659    0x70  Code  Gb  hw_i2c.o [1]
+hw_iic_read1            0x00004781    0xca  Code  Gb  hw_i2c.o [1]
+hw_iic_readn            0x000048f1    0x68  Code  Gb  hw_i2c.o [1]
+hw_iic_write1           0x0000484b    0xa6  Code  Gb  hw_i2c.o [1]
+hw_pit_init             0x00004bc1    0x5e  Code  Gb  pit.o [1]
+hw_send_signal          0x000046c9    0x66  Code  Gb  hw_i2c.o [1]
+hw_wait                 0x0000472f    0x52  Code  Gb  hw_i2c.o [1]
+image_distance          0x200022d0     0x4  Data  Gb  control.o [1]
+integralFBx             0x1fff05a4     0x4  Data  Gb  MahonyAHRS.o [1]
+integralFBx1            0x1fff05b0     0x4  Data  Gb  MahonyAHRS.o [1]
+integralFBy             0x1fff05a8     0x4  Data  Gb  MahonyAHRS.o [1]
+integralFBy1            0x1fff05b4     0x4  Data  Gb  MahonyAHRS.o [1]
+integralFBz             0x1fff05ac     0x4  Data  Gb  MahonyAHRS.o [1]
+integralFBz1            0x1fff05b8     0x4  Data  Gb  MahonyAHRS.o [1]
+invSqrt                 0x00006e59    0x36  Code  Gb  MahonyAHRS.o [1]
+irq_counter             0x2000271a     0x1  Data  Gb  isr.o [1]
+kalman_filter1          0x0000554d    0x94  Code  Gb  Balance_Kalman.o [1]
+kvx                     0x1fff0474     0x4  Data  Gb  control.o [1]
+kvy                     0x1fff0478     0x4  Data  Gb  control.o [1]
+lastHeight              0x200022a0     0x4  Data  Gb  control.o [1]
+log                     0x00004511     0x6  Code  Gb  log.o [4]
+main                    0x00006ff5   0x6b0  Code  Gb  main.o [1]
+median                  0x000050f5    0xde  Code  Gb  isr.o [1]
+periph_clk_khz          0x20002700     0x4  Data  Gb  sysinit.o [1]
+pit0_isr                0x00005421    0x3a  Code  Gb  isr.o [1]
+pll_init                0x00007721    0xf6  Code  Gb  sysinit.o [1]
+preHeight               0x200022a4     0x4  Data  Gb  control.o [1]
+prePointX               0x2000230c     0x4  Data  Gb  control.o [1]
+prePointY               0x20002310     0x4  Data  Gb  control.o [1]
+pre_err_angX            0x200022c8     0x4  Data  Lc  control.o [1]
+pre_err_angY            0x200022cc     0x4  Data  Lc  control.o [1]
+preposx                 0x20002314     0x4  Data  Lc  control.o [1]
+preposy                 0x20002318     0x4  Data  Lc  control.o [1]
+print_pixel_data        0x00004e81    0x58  Code  Gb  OpticaSensor.o [1]
+px                      0x1fff0480     0x4  Data  Gb  control.o [1]
+py                      0x1fff0484     0x4  Data  Gb  control.o [1]
+pz                      0x1fff0488     0x4  Data  Gb  control.o [1]
+q0                      0x1fff0428     0x4  Data  Gb  MahonyAHRS.o [1]
+q01                     0x1fff0424     0x4  Data  Gb  MahonyAHRS.o [1]
+q1                      0x1fff0598     0x4  Data  Gb  MahonyAHRS.o [1]
+q11                     0x1fff058c     0x4  Data  Gb  MahonyAHRS.o [1]
+q2                      0x1fff059c     0x4  Data  Gb  MahonyAHRS.o [1]
+q21                     0x1fff0590     0x4  Data  Gb  MahonyAHRS.o [1]
+q3                      0x1fff05a0     0x4  Data  Gb  MahonyAHRS.o [1]
+q31                     0x1fff0594     0x4  Data  Gb  MahonyAHRS.o [1]
+re_X                    0x200026e4     0x4  Data  Gb  isr.o [1]
+re_Y                    0x200026e8     0x4  Data  Gb  isr.o [1]
+reset                   0x00004e2d    0x20  Code  Gb  OpticaSensor.o [1]
+revise_X                0x200022d4     0x4  Data  Gb  control.o [1]
+revise_Y                0x200022d8     0x4  Data  Gb  control.o [1]
+send_data               0x20002710     0x1  Data  Gb  isr.o [1]
+sendcount               0x200022ac     0x4  Data  Gb  control.o [1]
+set_irq_priority        0x0000463d    0x1a  Code  Gb  common.o [1]
+set_pwm                 0x000040a3    0xda  Code  Gb  ftm.o [1]
+set_sys_dividers        0x1fff04b1    0x4c  Code  Gb  sysinit.o [1]
+signal_target           0x20002719     0x1  Data  Gb  isr.o [1]
+sin                     0x00004517     0x6  Code  Gb  sin.o [4]
+sqrt                    0x00004421          Code  Gb  sqrt.o [4]
+sqrtl                   0x00004421          Code  Gb  sqrt.o [4]
+start                   0x00007859    0x14  Code  Gb  start.o [1]
+startMotion             0x20002718     0x1  Data  Gb  isr.o [1]
+steerFlag               0x20002709     0x1  Data  Lc  control.o [1]
+sx                      0x200022e8     0x4  Data  Gb  control.o [1]
+sy                      0x200022ec     0x4  Data  Gb  control.o [1]
+sysinit                 0x000076ad    0x48  Code  Gb  sysinit.o [1]
+sz                      0x200022f0     0x4  Data  Gb  control.o [1]
+theta                   0x200022bc     0x4  Data  Gb  control.o [1]
+trace_clk_init          0x000076f5    0x16  Code  Gb  sysinit.o [1]
+twoKi                   0x1fff0584     0x4  Data  Gb  MahonyAHRS.o [1]
+twoKi1                  0x1fff0588     0x4  Data  Gb  MahonyAHRS.o [1]
+twoKp                   0x1fff041c     0x4  Data  Gb  MahonyAHRS.o [1]
+twoKp1                  0x1fff0420     0x4  Data  Gb  MahonyAHRS.o [1]
+uart0_isr               0x000051d3    0xac  Code  Gb  isr.o [1]
+uart1_isr               0x0000527f   0x1a2  Code  Gb  isr.o [1]
+uart_init               0x00004999   0x18e  Code  Gb  uart.o [1]
+uart_re1                0x00004b27    0x2c  Code  Gb  uart.o [1]
+uart_send1              0x00004b53     0xa  Code  Gb  uart.o [1]
+wdog_disable            0x00007909    0x16  Code  Gb  wdog.o [1]
+wdog_unlock             0x00007921    0x16  Code  Gb  wdog.o [1]
+writeDataToMemory       0x00003bc5    0x90  Code  Gb  get_data.o [1]
+write_vtor              0x00004525     0x6  Code  Gb  common.o [1]
+wx                      0x1fff0960  0x5dc0  Data  Gb  control.o [1]
+wy                      0x1fff6720  0x5dc0  Data  Gb  control.o [1]
+wz                      0x1fffc4e0  0x5dc0  Data  Gb  control.o [1]
+
+
+[1] = C:\Users\Thinkpad\Desktop\quadrotor150720飞行器跟随小车(改I2C)\bin\Flash\Obj
+[2] = command line
+[3] = dl7M_tln.a
+[4] = m7M_tl.a
+[5] = rt7M_tl.a
+[6] = shb_l.a
+
+  30 116 bytes of readonly  code memory
+      76 bytes of readwrite code memory
+   1 300 bytes of readonly  data memory
+  74 434 bytes of readwrite data memory
+
+Errors: none
+Warnings: none
